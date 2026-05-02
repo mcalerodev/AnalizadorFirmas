@@ -4,7 +4,7 @@
 $host = "localhost";
 $db   = "analizador_firmas";
 $user = "root";
-$pass = "19801021";
+$pass = "";
 
 // Crear conexión con PDO
 try {
