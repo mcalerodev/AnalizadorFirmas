@@ -28,12 +28,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $hash = md5_file($ruta);
 
         // 3. PREPARAR DATOS PARA BD
+
         $datos = [
-            'nombre_original' => $_FILES['archivo']['name'], // nombre original
-            'tipo_detectado' => 'DESCONOCIDO',              // luego se llenará*
-            'hash_md5' => $hash,                            // hash del archivo
-            'tamaño' => $_FILES['archivo']['size'],         // tamaño en bytes
-            'usuario_id' => null                            // luego será login**
+            'nombre_original' => $_FILES['archivo']['name'],
+            'tipo_detectado' => 'DESCONOCIDO',
+            'hash_md5' => $hash,
+            'tamaño' => $_FILES['archivo']['size'],
+            'usuario_id' => null,
+            'ruta' => $ruta 
         ];
 
         // 4. GUARDAR EN BASE DE DATOS

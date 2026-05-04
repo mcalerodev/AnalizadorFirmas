@@ -8,11 +8,14 @@ class ArchivoRepository {
         $this->conexion = $conexion;
     }
 
+    // =========================
     // GUARDAR
+    // =========================
     public function guardar($datos) {
 
-        $sql = "INSERT INTO archivos_analizados (nombre_original, tipo_detectado, hash_md5, tamaño, usuario_id) 
-        VALUES (?, ?, ?, ?, ?)";
+        $sql = "INSERT INTO archivos_analizados 
+        (nombre_original, tipo_detectado, hash_md5, tamaño, usuario_id, ruta) 
+        VALUES (?, ?, ?, ?, ?, ?)";
 
         $stmt = $this->conexion->prepare($sql);
 
@@ -21,11 +24,14 @@ class ArchivoRepository {
             $datos['tipo_detectado'],
             $datos['hash_md5'],
             $datos['tamaño'],
-            $datos['usuario_id']
+            $datos['usuario_id'],
+            $datos['ruta']
         ]);
     }
 
+    // =========================
     // OBTENER TODOS
+    // =========================
     public function obtenerTodos() {
 
         $sql = "SELECT * FROM archivos_analizados ORDER BY fecha_subida DESC";
@@ -36,10 +42,12 @@ class ArchivoRepository {
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
+    // =========================
     // OBTENER POR ID
+    // =========================
     public function obtenerPorId($id) {
 
-        $sql = "SELECT * FROM archivos_analizados  WHERE id = ?";
+        $sql = "SELECT * FROM archivos_analizados WHERE id = ?";
 
         $stmt = $this->conexion->prepare($sql);
         $stmt->execute([$id]);
@@ -47,10 +55,13 @@ class ArchivoRepository {
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
+    // =========================
     // ACTUALIZAR
+    // =========================
     public function actualizar($id, $datos) {
 
-        $sql = "UPDATE archivos_analizados SET nombre_original = ?, tipo_detectado = ?, hash_md5 = ?, tamaño = ?, usuario_id = ?
+        $sql = "UPDATE archivos_analizados 
+                SET nombre_original = ?, tipo_detectado = ?, hash_md5 = ?, tamaño = ?, usuario_id = ?, ruta = ?
                 WHERE id = ?";
 
         $stmt = $this->conexion->prepare($sql);
@@ -61,11 +72,14 @@ class ArchivoRepository {
             $datos['hash_md5'],
             $datos['tamaño'],
             $datos['usuario_id'],
+            $datos['ruta'],
             $id
         ]);
     }
 
-    // ELIMINAR
+    // =========================
+    // ELIMINAR (solo BD por ahora)
+    // =========================
     public function eliminar($id) {
 
         $sql = "DELETE FROM archivos_analizados WHERE id = ?";
@@ -74,7 +88,9 @@ class ArchivoRepository {
         $stmt->execute([$id]);
     }
 
+    // =========================
     // FILTRAR POR TIPO
+    // =========================
     public function filtrarPorTipo($tipo) {
 
         $sql = "SELECT * FROM archivos_analizados WHERE tipo_detectado = ?";
@@ -85,10 +101,13 @@ class ArchivoRepository {
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
+    // =========================
     // FILTRAR POR FECHA
+    // =========================
     public function filtrarPorFecha($fechaInicio, $fechaFin) {
 
-        $sql = "SELECT * FROM archivos_analizados WHERE fecha_subida BETWEEN ? AND ?";
+        $sql = "SELECT * FROM archivos_analizados 
+                WHERE fecha_subida BETWEEN ? AND ?";
 
         $stmt = $this->conexion->prepare($sql);
         $stmt->execute([$fechaInicio, $fechaFin]);
@@ -96,7 +115,9 @@ class ArchivoRepository {
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
+    // =========================
     // FILTRAR POR USUARIO
+    // =========================
     public function filtrarPorUsuario($usuarioId) {
 
         $sql = "SELECT * FROM archivos_analizados WHERE usuario_id = ?";
@@ -107,10 +128,13 @@ class ArchivoRepository {
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
+    // =========================
     // BUSCAR POR NOMBRE
+    // =========================
     public function buscarPorNombre($nombre) {
 
-        $sql = "SELECT * FROM archivos_analizados WHERE nombre_original LIKE ?";
+        $sql = "SELECT * FROM archivos_analizados 
+                WHERE nombre_original LIKE ?";
 
         $stmt = $this->conexion->prepare($sql);
         $stmt->execute(["%$nombre%"]);
