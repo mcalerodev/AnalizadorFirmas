@@ -28,3 +28,9 @@ CREATE TABLE auditoria (
 );
 
 SHOW TABLES;
+/*tipo detectado*/
+CREATE INDEX idx_tipo ON archivos_analizados(tipo_detectado); 
+/*fecha subida*/
+CREATE INDEX idx_fecha ON archivos_analizados(fecha_subida);
+/*usuario id*/
+CREATE INDEX idx_usuario ON archivos_analizados(usuario_id);
