@@ -13,7 +13,7 @@ header('Content-Type: text/html; charset=utf-8');
 // Cargar dependencias
 require_once __DIR__ . '/../src/Database/Conexion.php';
 require_once __DIR__ . '/../src/Service/MotorFirmas.php';
-require_once __DIR__ . '/../src/Storage/StorageManager.php';
+//require_once __DIR__ . '/../src/Storage/StorageManager.php'; Quitar el comentariado luego de agregar el Storage/StorageManager.php
 require_once __DIR__ . '/../src/Repository/ArchivoRepository.php';
 
 $resultado = null;
@@ -22,36 +22,64 @@ $error     = null;
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     try {
         // 1. Guardar archivo con validación (StorageManager)
-        $storage     = new StorageManager();
-        $rutaArchivo = $storage->guardarArchivo($_FILES['archivo']);
+       // $storage     = new StorageManager(); Quitar el comentariado luego de agregar el Storage/StorageManager.php
+       $rutaArchivo = $_FILES['archivo']['tmp_name'];
+        //$rutaArchivo = $storage->guardarArchivo($_FILES['archivo']);  Quitar el comentariado luego de agregar el Storage/StorageManager.php
 
         // 2. Analizar con la DLL via FFI — Singleton (DLL se carga una sola vez)
-        $motor      = MotorFirmas::getInstance();
-        $tipoCodigo = $motor->analizarArchivo($rutaArchivo);
-        $tipoNombre = $motor->obtenerNombreTipo($tipoCodigo);
-
-        // 3. Hash MD5
-        $hash = md5_file($rutaArchivo);
-
-        // 4. Guardar en BD — Singleton (una sola instancia PDO)
         $conexion = Conexion::getInstance();
-        $repo     = new ArchivoRepository($conexion);
+$repo     = new ArchivoRepository($conexion);
 
-        $repo->guardar([
-            'nombre_original' => $_FILES['archivo']['name'],
-            'tipo_detectado'  => $tipoNombre,
-            'hash_md5'        => $hash,
-            'tamaño'          => $_FILES['archivo']['size'],
-            'usuario_id'      => null
-        ]);
+// 🔐 Hash MD5
+$hash = md5_file($rutaArchivo);
 
-        $resultado = [
-            'nombre'  => $_FILES['archivo']['name'],
-            'tipo'    => $tipoNombre,
-            'codigo'  => $tipoCodigo,
-            'hash'    => $hash,
-            'tamaño'  => number_format($_FILES['archivo']['size'] / 1024, 2) . ' KB'
-        ];
+// 🔍 Buscar en cache
+$existente = $repo->buscarPorHash($hash);
+
+if ($existente) {
+    // CACHE HIT
+    $repo->registrarAuditoria(
+    "sistema",
+    "cache",
+    null,
+    "Archivo obtenido desde cache: " . $existente['nombre_original']
+);
+    $resultado = [
+        'nombre'  => $existente['nombre_original'],
+        'tipo'    => $existente['tipo_detectado'],
+        'codigo'  => 'CACHE',
+        'hash'    => $existente['hash_md5'],
+        'tamaño'  => number_format($existente['tamaño'] / 1024, 2) . ' KB'
+    ];
+} else {
+    // ANALIZAR NORMAL
+    $motor      = MotorFirmas::getInstance();
+    $tipoCodigo = $motor->analizarArchivo($rutaArchivo);
+    $tipoNombre = $motor->obtenerNombreTipo($tipoCodigo);
+
+    $repo->guardar([
+        'nombre_original' => $_FILES['archivo']['name'],
+        'tipo_detectado'  => $tipoNombre,
+        'hash_md5'        => $hash,
+        'tamaño'          => $_FILES['archivo']['size'],
+        'usuario_id'      => null
+    ]);
+    $repo->registrarAuditoria(
+    "sistema",
+    "analisis",
+    null,
+    "Archivo analizado: " . $_FILES['archivo']['name']
+);
+
+    $resultado = [
+        'nombre'  => $_FILES['archivo']['name'],
+        'tipo'    => $tipoNombre,
+        'codigo'  => $tipoCodigo,
+        'hash'    => $hash,
+        'tamaño'  => number_format($_FILES['archivo']['size'] / 1024, 2) . ' KB'
+    ];
+}
+        
     } catch (Exception $e) {
         $error = $e->getMessage();
     }
@@ -133,12 +161,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <form method="POST" enctype="multipart/form-data">
         <input type="file" name="archivo" required>
         <br>
-        <button type="submit">Analizar archivo</button>
+        <button type="submit">Analizar archivo </button>
     </form>
 
     <?php if ($resultado): ?>
         <div class="resultado">
             <h3>✅ Archivo analizado correctamente</h3>
+            
             <table>
                 <tr>
                     <td>Nombre</td>

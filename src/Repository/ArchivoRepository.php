@@ -117,4 +117,49 @@ class ArchivoRepository {
 
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
+    public function buscarPorHash($hash) {
+    $sql = "SELECT * FROM archivos_analizados WHERE hash_md5 = :hash LIMIT 1";
+    $stmt = $this->conexion->prepare($sql);
+    $stmt->bindParam(':hash', $hash);
+    $stmt->execute();
+    return $stmt->fetch(PDO::FETCH_ASSOC);
+}
+public function registrarAuditoria($usuario, $accion, $archivoId, $descripcion) {
+    $sql = "INSERT INTO auditoria (usuario, accion, archivo_id, descripcion) 
+            VALUES (:usuario, :accion, :archivo_id, :descripcion)";
+
+    $stmt = $this->conexion->prepare($sql);
+    $stmt->bindParam(':usuario', $usuario);
+    $stmt->bindParam(':accion', $accion);
+    $stmt->bindParam(':archivo_id', $archivoId);
+    $stmt->bindParam(':descripcion', $descripcion);
+
+    $stmt->execute();
+}
+public function obtenerHistorial($tipo = null, $fecha = null) {
+    $sql = "SELECT * FROM archivos_analizados WHERE 1=1";
+
+    if ($tipo) {
+        $sql .= " AND tipo_detectado = :tipo";
+    }
+
+    if ($fecha) {
+    $sql .= " AND DATE(fecha_subida) = :fecha";
+}
+
+    $stmt = $this->conexion->prepare($sql);
+
+    if ($tipo) {
+        $stmt->bindParam(':tipo', $tipo);
+    }
+
+    if ($fecha) {
+        $stmt->bindParam(':fecha', $fecha);
+    }
+    $sql .= " ORDER BY fecha_subida DESC";
+
+    $stmt->execute();
+
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
 }
