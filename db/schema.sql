@@ -34,3 +34,6 @@ CREATE INDEX idx_tipo ON archivos_analizados(tipo_detectado);
 CREATE INDEX idx_fecha ON archivos_analizados(fecha_subida);
 /*usuario id*/
 CREATE INDEX idx_usuario ON archivos_analizados(usuario_id);
+
+ALTER TABLE archivos_analizados 
+ADD ruta VARCHAR(255) NOT NULL;
