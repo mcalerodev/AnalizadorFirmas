@@ -1,0 +1,16 @@
+# Binarios compilados (no se versionan, van en engine/ solo localmente)
+*.dll
+*.exe
+*.obj
+*.lst
+
+# Archivos subidos por usuarios
+storage/
+uploads/
+
+# Configuración local de PHP
+info.php
+
+# Sistema operativo
+Thumbs.db
+.DS_Store

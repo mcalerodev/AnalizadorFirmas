@@ -32,8 +32,8 @@ class MotorFirmas
 
     private function __construct()
     {
-        $rutaDll = realpath(__DIR__ . '/../motor_firmas.dll');
-        $rutaExe = realpath(__DIR__ . '/../motor_firmas.exe');
+        $rutaDll = realpath(__DIR__ . '/../../engine/motor_firmas.dll');
+        $rutaExe = realpath(__DIR__ . '/../../engine/motor_firmas.exe');
 
         // Intentar cargar FFI (fallará si hay conflicto de arquitectura x86/x64)
         if ($rutaDll !== false && file_exists($rutaDll)) {
@@ -93,7 +93,7 @@ class MotorFirmas
 
         // ── Modo EXE ──────────────────────────────────────────────────────
         if ($this->modoExe) {
-            $rutaExe = realpath(__DIR__ . '/../motor_firmas.exe');
+            $rutaExe = realpath(__DIR__ . '/../../engine/motor_firmas.exe');
             $output  = shell_exec(escapeshellarg($rutaExe) . ' ' . escapeshellarg($ruta));
             return intval(trim($output));
         }
