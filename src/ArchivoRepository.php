@@ -9,12 +9,23 @@ class ArchivoRepository {
     }
 
     // =========================
-    // GUARDAR
+    // REGISTRAR AUDITORÍA
+    // =========================
+    public function registrarAuditoria($usuario, $accion, $archivoId, $descripcion) {
+
+        $sql = "INSERT INTO auditoria (usuario, accion, archivo_id, descripcion)  VALUES (?, ?, ?, ?)";
+
+        $stmt = $this->conexion->prepare($sql);
+        $stmt->execute([$usuario, $accion, $archivoId, $descripcion]);
+    }
+
+    // =========================
+    // GUARDAR ARCHIVO
     // =========================
     public function guardar($datos) {
 
         $sql = "INSERT INTO archivos_analizados 
-        (nombre_original, tipo_detectado, hash_md5, tamaño, usuario_id, ruta) 
+        (nombre_original, tipo_detectado, hash_md5, tamaño, usuario_id, ruta)
         VALUES (?, ?, ?, ?, ?, ?)";
 
         $stmt = $this->conexion->prepare($sql);
@@ -27,6 +38,17 @@ class ArchivoRepository {
             $datos['usuario_id'],
             $datos['ruta']
         ]);
+
+        // Obtener ID del archivo recién insertado
+        $id = $this->conexion->lastInsertId();
+
+        // Auditoría
+        $this->registrarAuditoria(
+            'sistema',
+            'SUBIR_ARCHIVO',
+            $id,
+            'Archivo subido: ' . $datos['nombre_original']
+        );
     }
 
     // =========================
@@ -61,8 +83,7 @@ class ArchivoRepository {
     public function actualizar($id, $datos) {
 
         $sql = "UPDATE archivos_analizados 
-                SET nombre_original = ?, tipo_detectado = ?, hash_md5 = ?, tamaño = ?, usuario_id = ?, ruta = ?
-                WHERE id = ?";
+                SET nombre_original = ?, tipo_detectado = ?, hash_md5 = ?, tamaño = ?, usuario_id = ?, ruta = ? WHERE id = ?";
 
         $stmt = $this->conexion->prepare($sql);
 
@@ -78,32 +99,42 @@ class ArchivoRepository {
     }
 
     // =========================
-    // ELIMINAR 
+    // ELIMINAR (SEGURA + AUDITORÍA)
     // =========================
     public function eliminar($id) {
-            // 1. Obtener archivo (para saber la ruta)
-            $archivo = $this->obtenerPorId($id);
 
-            if (!$archivo) {
-                throw new Exception("Archivo no encontrado");
-            }
+        // Obtener archivo
+        $archivo = $this->obtenerPorId($id);
 
-            $ruta = $archivo['ruta'];
+        if (!$archivo) {
+            throw new Exception("Archivo no encontrado");
+        }
 
-            // 2. Eliminar archivo físico
-            if (file_exists($ruta)) {
-                unlink($ruta);
-            }
+        $ruta = $archivo['ruta'];
 
-            // 3. Eliminar de la BD
-            $sql = "DELETE FROM archivos_analizados WHERE id = ?";
-            $stmt = $this->conexion->prepare($sql);
-            $stmt->execute([$id]);
+        // Eliminar archivo físico
+        if (file_exists($ruta)) {
+            unlink($ruta);
+        }
+
+        // Eliminar de BD
+        $sql = "DELETE FROM archivos_analizados WHERE id = ?";
+        $stmt = $this->conexion->prepare($sql);
+        $stmt->execute([$id]);
+
+        // Auditoría
+        $this->registrarAuditoria(
+            'sistema',
+            'ELIMINAR_ARCHIVO',
+            $id,
+            'Archivo eliminado del sistema'
+        );
     }
 
     // =========================
-    // FILTRAR POR TIPO
+    // FILTROS
     // =========================
+
     public function filtrarPorTipo($tipo) {
 
         $sql = "SELECT * FROM archivos_analizados WHERE tipo_detectado = ?";
@@ -114,23 +145,17 @@ class ArchivoRepository {
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    // =========================
-    // FILTRAR POR FECHA
-    // =========================
-    public function filtrarPorFecha($fechaInicio, $fechaFin) {
+    public function filtrarPorFecha($inicio, $fin) {
 
         $sql = "SELECT * FROM archivos_analizados 
                 WHERE fecha_subida BETWEEN ? AND ?";
 
         $stmt = $this->conexion->prepare($sql);
-        $stmt->execute([$fechaInicio, $fechaFin]);
+        $stmt->execute([$inicio, $fin]);
 
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    // =========================
-    // FILTRAR POR USUARIO
-    // =========================
     public function filtrarPorUsuario($usuarioId) {
 
         $sql = "SELECT * FROM archivos_analizados WHERE usuario_id = ?";
@@ -141,13 +166,9 @@ class ArchivoRepository {
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    // =========================
-    // BUSCAR POR NOMBRE
-    // =========================
     public function buscarPorNombre($nombre) {
 
-        $sql = "SELECT * FROM archivos_analizados 
-                WHERE nombre_original LIKE ?";
+        $sql = "SELECT * FROM archivos_analizados WHERE nombre_original LIKE ?";
 
         $stmt = $this->conexion->prepare($sql);
         $stmt->execute(["%$nombre%"]);
