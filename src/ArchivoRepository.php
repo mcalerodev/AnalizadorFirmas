@@ -78,14 +78,27 @@ class ArchivoRepository {
     }
 
     // =========================
-    // ELIMINAR (solo BD por ahora)
+    // ELIMINAR 
     // =========================
     public function eliminar($id) {
+            // 1. Obtener archivo (para saber la ruta)
+            $archivo = $this->obtenerPorId($id);
 
-        $sql = "DELETE FROM archivos_analizados WHERE id = ?";
+            if (!$archivo) {
+                throw new Exception("Archivo no encontrado");
+            }
 
-        $stmt = $this->conexion->prepare($sql);
-        $stmt->execute([$id]);
+            $ruta = $archivo['ruta'];
+
+            // 2. Eliminar archivo físico
+            if (file_exists($ruta)) {
+                unlink($ruta);
+            }
+
+            // 3. Eliminar de la BD
+            $sql = "DELETE FROM archivos_analizados WHERE id = ?";
+            $stmt = $this->conexion->prepare($sql);
+            $stmt->execute([$id]);
     }
 
     // =========================
