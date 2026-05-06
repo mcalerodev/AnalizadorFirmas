@@ -1,5 +1,7 @@
 <?php
 
+session_start();
+
 /**
  * test.php — Interfaz de prueba (formulario web)
  *
@@ -42,7 +44,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'tipo_detectado'  => $tipoNombre,
             'hash_md5'        => $hash,
             'tamaño'          => $_FILES['archivo']['size'],
-            'usuario_id'      => null,
+            'usuario_id' => $_SESSION['usuario_id'] ?? null,
             'ruta'            => $rutaArchivo
         ]);
 
@@ -63,6 +65,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 <head>
     <meta charset="UTF-8">
+    <a href="logout.php">Cerrar sesión</a>
     <title>AnalizadorFirmas — Prueba</title>
     <style>
         body {

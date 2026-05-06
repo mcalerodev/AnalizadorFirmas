@@ -44,7 +44,7 @@ class ArchivoRepository {
 
         // Auditoría
         $this->registrarAuditoria(
-            'sistema',
+            $_SESSION['correo'] ?? 'sistema',
             'SUBIR_ARCHIVO',
             $id,
             'Archivo subido: ' . $datos['nombre_original']
@@ -94,11 +94,11 @@ class ArchivoRepository {
 
         // Auditoría
         $this->registrarAuditoria(
-            'sistema',
+            $_SESSION['correo'] ?? 'sistema',
             'ACTUALIZAR_ARCHIVO',
             $id,
             'Archivo actualizado'
-        );
+       );
     }
 
     // ELIMINAR (CORREGIDO)
@@ -123,10 +123,10 @@ class ArchivoRepository {
 
         // 4. Auditoría
         $this->registrarAuditoria(
-            'sistema',
+            $_SESSION['correo'] ?? 'sistema',
             'ELIMINAR_ARCHIVO',
             $id,
-            'Archivo eliminado: ' . $archivo['nombre_original']
+            'Archivo eliminado'
         );
     }
 

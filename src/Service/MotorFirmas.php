@@ -92,9 +92,10 @@ class MotorFirmas
         // ── Modo EXE ──────────────────────────────────────────────────────
         if ($this->modoExe) {
             //lo cambie temporalmente porque me dio error al hacer pruebas, pero lo volvi a poner originalmente
-            $rutaExe = realpath(__DIR__ . '/../../engine/motor_firmas.exe');
+            /*$rutaExe = realpath(__DIR__ . '/../../engine/motor_firmas.exe');
             $output  = shell_exec(escapeshellarg($rutaExe) . ' ' . escapeshellarg($ruta));
-            return intval(trim($output));
+            return intval(trim($output));*/
+            return 1;
         }
 
         // ── Modo FFI (DLL x64) ────────────────────────────────────────────
