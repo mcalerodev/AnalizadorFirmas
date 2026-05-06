@@ -1,1 +1,17 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 20px;
+}
 
+#drop-area {
+    border: 2px dashed #666;
+    padding: 20px;
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+#resultados {
+    background: #f4f4f4;
+    padding: 15px;
+    border-radius: 5px;
+}
