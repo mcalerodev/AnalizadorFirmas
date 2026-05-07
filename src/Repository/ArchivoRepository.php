@@ -1,29 +1,34 @@
 <?php
 
-class ArchivoRepository
-{
-    private $conexion;
+require_once __DIR__ . '/../Storage/StorageManager.php';
 
-    /**
-     * Si no se pasa $conexion, la resuelve internamente usando Conexion::getInstance().
-     * Esto mantiene compatibilidad con código antiguo y aplica el Singleton correctamente.
-     */
-    public function __construct($conexion = null)
-    {
-        if ($conexion !== null) {
-            $this->conexion = $conexion;
-        } else {
-            require_once __DIR__ . '/../Database/Conexion.php';
-            $this->conexion = Conexion::getInstance();
-        }
+class ArchivoRepository {
+
+    private $conexion;
+    private $storage;
+
+    public function __construct($conexion) {
+        $this->conexion = $conexion;
+        $this->storage = new StorageManager();
+    }
+
+    // REGISTRAR AUDITORÍA
+    public function registrarAuditoria($usuario, $accion, $archivoId, $descripcion) {
+
+        $sql = "INSERT INTO auditoria (usuario, accion, archivo_id, descripcion)
+                VALUES (?, ?, ?, ?)";
+
+        $stmt = $this->conexion->prepare($sql);
+        $stmt->execute([$usuario, $accion, $archivoId, $descripcion]);
     }
 
     // GUARDAR
     public function guardar($datos)
     {
 
-        $sql = "INSERT INTO archivos_analizados (nombre_original, tipo_detectado, hash_md5, tamaño, usuario_id) 
-        VALUES (?, ?, ?, ?, ?)";
+        $sql = "INSERT INTO archivos_analizados 
+        (nombre_original, tipo_detectado, hash_md5, tamaño, usuario_id, ruta) 
+        VALUES (?, ?, ?, ?, ?, ?)";
 
         $stmt = $this->conexion->prepare($sql);
 
@@ -32,8 +37,19 @@ class ArchivoRepository
             $datos['tipo_detectado'],
             $datos['hash_md5'],
             $datos['tamaño'],
-            $datos['usuario_id']
+            $datos['usuario_id'],
+            $datos['ruta']
         ]);
+
+        $id = $this->conexion->lastInsertId();
+
+        // Auditoría
+        $this->registrarAuditoria(
+            $_SESSION['correo'] ?? 'sistema',
+            'SUBIR_ARCHIVO',
+            $id,
+            'Archivo subido: ' . $datos['nombre_original']
+        );
     }
 
     // OBTENER TODOS
@@ -52,7 +68,7 @@ class ArchivoRepository
     public function obtenerPorId($id)
     {
 
-        $sql = "SELECT * FROM archivos_analizados  WHERE id = ?";
+        $sql = "SELECT * FROM archivos_analizados WHERE id = ?";
 
         $stmt = $this->conexion->prepare($sql);
         $stmt->execute([$id]);
@@ -64,7 +80,8 @@ class ArchivoRepository
     public function actualizar($id, $datos)
     {
 
-        $sql = "UPDATE archivos_analizados SET nombre_original = ?, tipo_detectado = ?, hash_md5 = ?, tamaño = ?, usuario_id = ?
+        $sql = "UPDATE archivos_analizados 
+                SET nombre_original = ?, tipo_detectado = ?, hash_md5 = ?, tamaño = ?, usuario_id = ?, ruta = ?
                 WHERE id = ?";
 
         $stmt = $this->conexion->prepare($sql);
@@ -75,23 +92,51 @@ class ArchivoRepository
             $datos['hash_md5'],
             $datos['tamaño'],
             $datos['usuario_id'],
+            $datos['ruta'],
             $id
         ]);
+
+        // Auditoría
+        $this->registrarAuditoria(
+            $_SESSION['correo'] ?? 'sistema',
+            'ACTUALIZAR_ARCHIVO',
+            $id,
+            'Archivo actualizado'
+       );
     }
 
-    // ELIMINAR
-    public function eliminar($id)
-    {
+    // ELIMINAR (CORREGIDO)
+    public function eliminar($id) {
 
+        // 1. Obtener archivo
+        $archivo = $this->obtenerPorId($id);
+
+        if (!$archivo) {
+            throw new Exception("Archivo no encontrado");
+        }
+
+        // 2. Eliminar archivo físico 
+        if (isset($archivo['ruta'])) {
+            $this->storage->eliminarArchivo($archivo['ruta']);
+        }
+
+        // 3. Eliminar de BD
         $sql = "DELETE FROM archivos_analizados WHERE id = ?";
-
         $stmt = $this->conexion->prepare($sql);
         $stmt->execute([$id]);
+
+        // 4. Auditoría
+        $this->registrarAuditoria(
+            $_SESSION['correo'] ?? 'sistema',
+            'ELIMINAR_ARCHIVO',
+            $id,
+            'Archivo eliminado'
+        );
     }
 
-    // FILTRAR POR TIPO
-    public function filtrarPorTipo($tipo)
-    {
+    // FILTROS
+
+    public function filtrarPorTipo($tipo) {
 
         $sql = "SELECT * FROM archivos_analizados WHERE tipo_detectado = ?";
 
@@ -101,9 +146,7 @@ class ArchivoRepository
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    // FILTRAR POR FECHA
-    public function filtrarPorFecha($fechaInicio, $fechaFin)
-    {
+    public function filtrarPorFecha($fechaInicio, $fechaFin) {
 
         $sql = "SELECT * FROM archivos_analizados WHERE fecha_subida BETWEEN ? AND ?";
 
@@ -113,9 +156,7 @@ class ArchivoRepository
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    // FILTRAR POR USUARIO
-    public function filtrarPorUsuario($usuarioId)
-    {
+    public function filtrarPorUsuario($usuarioId) {
 
         $sql = "SELECT * FROM archivos_analizados WHERE usuario_id = ?";
 
@@ -125,9 +166,7 @@ class ArchivoRepository
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    // BUSCAR POR NOMBRE
-    public function buscarPorNombre($nombre)
-    {
+    public function buscarPorNombre($nombre) {
 
         $sql = "SELECT * FROM archivos_analizados WHERE nombre_original LIKE ?";
 
@@ -144,19 +183,7 @@ class ArchivoRepository
         $stmt->execute();
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
-    public function registrarAuditoria($usuario, $accion, $archivoId, $descripcion)
-    {
-        $sql = "INSERT INTO auditoria (usuario, accion, archivo_id, descripcion) 
-            VALUES (:usuario, :accion, :archivo_id, :descripcion)";
 
-        $stmt = $this->conexion->prepare($sql);
-        $stmt->bindParam(':usuario', $usuario);
-        $stmt->bindParam(':accion', $accion);
-        $stmt->bindParam(':archivo_id', $archivoId);
-        $stmt->bindParam(':descripcion', $descripcion);
-
-        $stmt->execute();
-    }
     public function obtenerHistorial($tipo = null, $fecha = null)
     {
         $sql = "SELECT * FROM archivos_analizados WHERE 1=1";

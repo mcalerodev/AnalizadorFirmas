@@ -1,5 +1,7 @@
 <?php
 
+session_start();
+
 /**
  * test.php — Interfaz de prueba (formulario web)
  *
@@ -9,11 +11,11 @@
  */
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
-header('Content-Type: text/html; charset=utf-8');
+
 // Cargar dependencias
 require_once __DIR__ . '/../src/Database/Conexion.php';
 require_once __DIR__ . '/../src/Service/MotorFirmas.php';
-//require_once __DIR__ . '/../src/Storage/StorageManager.php'; Quitar el comentariado luego de agregar el Storage/StorageManager.php
+require_once __DIR__ . '/../src/Storage/StorageManager.php';
 require_once __DIR__ . '/../src/Repository/ArchivoRepository.php';
 
 $resultado = null;
@@ -22,64 +24,37 @@ $error     = null;
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     try {
         // 1. Guardar archivo con validación (StorageManager)
-       // $storage     = new StorageManager(); Quitar el comentariado luego de agregar el Storage/StorageManager.php
-       $rutaArchivo = $_FILES['archivo']['tmp_name'];
-        //$rutaArchivo = $storage->guardarArchivo($_FILES['archivo']);  Quitar el comentariado luego de agregar el Storage/StorageManager.php
+        $storage     = new StorageManager();
+        $rutaArchivo = $storage->guardarArchivo($_FILES['archivo']);
 
         // 2. Analizar con la DLL via FFI — Singleton (DLL se carga una sola vez)
+        $motor      = MotorFirmas::getInstance();
+        $tipoCodigo = $motor->analizarArchivo($rutaArchivo);
+        $tipoNombre = $motor->obtenerNombreTipo($tipoCodigo);
+
+        // 3. Hash MD5
+        $hash = md5_file($rutaArchivo);
+
+        // 4. Guardar en BD — Singleton (una sola instancia PDO)
         $conexion = Conexion::getInstance();
-$repo     = new ArchivoRepository($conexion);
+        $repo     = new ArchivoRepository($conexion);
 
-// 🔐 Hash MD5
-$hash = md5_file($rutaArchivo);
+        $repo->guardar([
+            'nombre_original' => $_FILES['archivo']['name'],
+            'tipo_detectado'  => $tipoNombre,
+            'hash_md5'        => $hash,
+            'tamaño'          => $_FILES['archivo']['size'],
+            'usuario_id' => $_SESSION['usuario_id'] ?? null,
+            'ruta'            => $rutaArchivo
+        ]);
 
-// 🔍 Buscar en cache
-$existente = $repo->buscarPorHash($hash);
-
-if ($existente) {
-    // CACHE HIT
-    $repo->registrarAuditoria(
-    "sistema",
-    "cache",
-    null,
-    "Archivo obtenido desde cache: " . $existente['nombre_original']
-);
-    $resultado = [
-        'nombre'  => $existente['nombre_original'],
-        'tipo'    => $existente['tipo_detectado'],
-        'codigo'  => 'CACHE',
-        'hash'    => $existente['hash_md5'],
-        'tamaño'  => number_format($existente['tamaño'] / 1024, 2) . ' KB'
-    ];
-} else {
-    // ANALIZAR NORMAL
-    $motor      = MotorFirmas::getInstance();
-    $tipoCodigo = $motor->analizarArchivo($rutaArchivo);
-    $tipoNombre = $motor->obtenerNombreTipo($tipoCodigo);
-
-    $repo->guardar([
-        'nombre_original' => $_FILES['archivo']['name'],
-        'tipo_detectado'  => $tipoNombre,
-        'hash_md5'        => $hash,
-        'tamaño'          => $_FILES['archivo']['size'],
-        'usuario_id'      => null
-    ]);
-    $repo->registrarAuditoria(
-    "sistema",
-    "analisis",
-    null,
-    "Archivo analizado: " . $_FILES['archivo']['name']
-);
-
-    $resultado = [
-        'nombre'  => $_FILES['archivo']['name'],
-        'tipo'    => $tipoNombre,
-        'codigo'  => $tipoCodigo,
-        'hash'    => $hash,
-        'tamaño'  => number_format($_FILES['archivo']['size'] / 1024, 2) . ' KB'
-    ];
-}
-        
+        $resultado = [
+            'nombre'  => $_FILES['archivo']['name'],
+            'tipo'    => $tipoNombre,
+            'codigo'  => $tipoCodigo,
+            'hash'    => $hash,
+            'tamaño'  => number_format($_FILES['archivo']['size'] / 1024, 2) . ' KB'
+        ];
     } catch (Exception $e) {
         $error = $e->getMessage();
     }
@@ -90,6 +65,7 @@ if ($existente) {
 
 <head>
     <meta charset="UTF-8">
+    <a href="logout.php">Cerrar sesión</a>
     <title>AnalizadorFirmas — Prueba</title>
     <style>
         body {
@@ -161,13 +137,12 @@ if ($existente) {
     <form method="POST" enctype="multipart/form-data">
         <input type="file" name="archivo" required>
         <br>
-        <button type="submit">Analizar archivo </button>
+        <button type="submit">Analizar archivo</button>
     </form>
 
     <?php if ($resultado): ?>
         <div class="resultado">
             <h3>✅ Archivo analizado correctamente</h3>
-            
             <table>
                 <tr>
                     <td>Nombre</td>
@@ -175,7 +150,8 @@ if ($existente) {
                 </tr>
                 <tr>
                     <td>Tipo detectado</td>
-                    <td><strong><?= htmlspecialchars($resultado['tipo']) ?></strong> (código <?= $resultado['codigo'] ?>)
+                    <td><strong><?= htmlspecialchars($resultado['tipo']) ?></strong> (código
+                        <?= $resultado['codigo'] ?>)
                     </td>
                 </tr>
                 <tr>
@@ -193,6 +169,31 @@ if ($existente) {
     <?php if ($error): ?>
         <div class="error">❌ Error: <?= htmlspecialchars($error) ?></div>
     <?php endif; ?>
+    <?php
+    $conexion = Conexion::getInstance();
+    $repo = new ArchivoRepository($conexion);
+    $archivos = $repo->obtenerTodos();
+    ?> <h3> Historial de archivos</h3>
+
+    <table border="1" cellpadding="8">
+        <tr>
+            <th>ID</th>
+            <th>Nombre</th>
+            <th>Tipo</th>
+            <th>Tamaño</th>
+            <th>Fecha</th>
+        </tr>
+
+        <?php foreach ($archivos as $a): ?>
+            <tr>
+                <td><?= $a['id'] ?></td>
+                <td><?= htmlspecialchars($a['nombre_original']) ?></td>
+                <td><?= $a['tipo_detectado'] ?></td>
+                <td><?= $a['tamaño'] ?></td>
+                <td><?= $a['fecha_subida'] ?></td>
+            </tr>
+        <?php endforeach; ?>
+    </table>
 
     <div class="api-links">
         <strong>Endpoints API REST:</strong><br>

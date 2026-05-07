@@ -12,6 +12,7 @@ CREATE TABLE archivos_analizados (
     nombre_original VARCHAR(255) NOT NULL,
     tipo_detectado VARCHAR(50) NOT NULL,
     hash_md5 CHAR(32) NOT NULL,
+    ruta VARCHAR(255) NOT NULL,
     fecha_subida DATETIME DEFAULT CURRENT_TIMESTAMP,
     usuario_id INT NULL,
     tamaño INT NOT NULL,
@@ -28,3 +29,9 @@ CREATE TABLE auditoria (
 );
 
 SHOW TABLES;
+
+-- Índices para búsquedas frecuentes
+CREATE INDEX idx_tipo    ON archivos_analizados(tipo_detectado);
+CREATE INDEX idx_fecha   ON archivos_analizados(fecha_subida);
+CREATE INDEX idx_usuario ON archivos_analizados(usuario_id);
+CREATE INDEX idx_hash    ON archivos_analizados(hash_md5);

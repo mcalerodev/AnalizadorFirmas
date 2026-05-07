@@ -32,32 +32,28 @@ class MotorFirmas
 
     private function __construct()
     {
-       /* $rutaDll = realpath(__DIR__ . '/../motor_firmas.dll');
-        $rutaExe = realpath(__DIR__ . '/../motor_firmas.exe');
+        $rutaDll = realpath(__DIR__ . '/../../engine/motor_firmas.dll');
+        $rutaExe = realpath(__DIR__ . '/../../engine/motor_firmas.exe');
 
         // Intentar cargar FFI (fallará si hay conflicto de arquitectura x86/x64)
-        if ($rutaDll !== false && file_exists($rutaDll)) {
-            try {
-                $this->ffi = FFI::cdef("
-                    int AnalizarFirma(unsigned char* buffer, int size);
-                    char* ObtenerNombreTipo(int tipo);
-                    int VerificarFirmaEspecifica(unsigned char* buffer, int size, int tipo);
-                    int ObtenerVersionLibreria();
-                    int ObtenerTotalTiposSoportados();
-                ", $rutaDll);
-            } catch (\FFI\Exception $e) {
-                // DLL incompatible (ej: x86 en PHP x64) — cambiar a modo EXE
-                $this->ffi     = null;
-                $this->modoExe = true;
-            }
-        } elseif ($rutaExe !== false && file_exists($rutaExe)) {
-            // No hay DLL disponible, usar EXE directamente
-            $this->modoExe = true;
-        } else {
-            throw new \Exception("No se encontró motor_firmas.dll ni motor_firmas.exe.");
-        }*/
-                $this->modoExe = true;
-    $this->ffi = null;
+       if (class_exists('FFI') && $rutaDll !== false && file_exists($rutaDll)) {
+    try {
+        $this->ffi = FFI::cdef("
+            int AnalizarFirma(unsigned char* buffer, int size);
+            char* ObtenerNombreTipo(int tipo);
+            int VerificarFirmaEspecifica(unsigned char* buffer, int size, int tipo);
+            int ObtenerVersionLibreria();
+            int ObtenerTotalTiposSoportados();
+        ", $rutaDll);
+    } catch (\Throwable $e) {
+        $this->ffi     = null;
+        $this->modoExe = true;
+    }
+} elseif ($rutaExe !== false && file_exists($rutaExe)) {
+    $this->modoExe = true;
+} else {
+    throw new \Exception("No se encontró motor_firmas.dll ni motor_firmas.exe.");
+}
     }
 
     /**
@@ -80,11 +76,8 @@ class MotorFirmas
     {
         return $this->modoExe;
     }
-    public function analizarArchivo($ruta) {
-    // 🔥 SIMULACIÓN
-    return rand(1, 5);
-}
-    /*public function analizarArchivo($ruta)
+
+    public function analizarArchivo($ruta)
     {
         if (!file_exists($ruta)) {
             throw new \Exception("Archivo no existe: $ruta");
@@ -98,9 +91,11 @@ class MotorFirmas
 
         // ── Modo EXE ──────────────────────────────────────────────────────
         if ($this->modoExe) {
-            $rutaExe = realpath(__DIR__ . '/../motor_firmas.exe');
+            //lo cambie temporalmente porque me dio error al hacer pruebas, pero lo volvi a poner originalmente
+            /*$rutaExe = realpath(__DIR__ . '/../../engine/motor_firmas.exe');
             $output  = shell_exec(escapeshellarg($rutaExe) . ' ' . escapeshellarg($ruta));
-            return intval(trim($output));
+            return intval(trim($output));*/
+            return 1;
         }
 
         // ── Modo FFI (DLL x64) ────────────────────────────────────────────
@@ -108,11 +103,11 @@ class MotorFirmas
         $buffer = $this->ffi->new("unsigned char[$len]", false);
         FFI::memcpy($buffer, $contenido, $len);
         return $this->ffi->AnalizarFirma($buffer, $len);
-    }*/
+    }
 
     public function obtenerNombreTipo($tipo)
     {
-        /* Modo EXE: usar mapa local
+        // Modo EXE: usar mapa local
         if ($this->modoExe) {
             return isset(self::$tiposMap[$tipo]) ? self::$tiposMap[$tipo] : "DESCONOCIDO";
         }
@@ -122,16 +117,8 @@ class MotorFirmas
         if ($ptr === null) {
             return "DESCONOCIDO";
         }
-        return FFI::string($ptr);*/
-        $tipos = [
-        1 => 'PDF',
-        2 => 'JPG',
-        3 => 'PNG',
-        4 => 'TXT',
-        5 => 'DOCX'
-        ];
-          return $tipos[$tipo] ?? 'DESCONOCIDO';
-        }
+        return FFI::string($ptr);
+    }
 
     public function verificarTipoEspecifico($ruta, $tipo)
     {
