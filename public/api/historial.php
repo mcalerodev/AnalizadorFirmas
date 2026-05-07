@@ -5,8 +5,8 @@ require_once __DIR__ . '/../../src/Database/Conexion.php';
 require_once __DIR__ . '/../../src/Repository/ArchivoRepository.php';
 
 try {
-    $conexion = Conexion::getInstance();
-    $repo     = new ArchivoRepository($conexion);
+    // ArchivoRepository resuelve la conexión internamente (Singleton)
+    $repo = new ArchivoRepository();
 
     // 🔍 Filtros opcionales
     $tipo  = $_GET['tipo']  ?? null;

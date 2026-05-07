@@ -1,15 +1,26 @@
 <?php
 
-class ArchivoRepository {
-
+class ArchivoRepository
+{
     private $conexion;
 
-    public function __construct($conexion) {
-        $this->conexion = $conexion;
+    /**
+     * Si no se pasa $conexion, la resuelve internamente usando Conexion::getInstance().
+     * Esto mantiene compatibilidad con código antiguo y aplica el Singleton correctamente.
+     */
+    public function __construct($conexion = null)
+    {
+        if ($conexion !== null) {
+            $this->conexion = $conexion;
+        } else {
+            require_once __DIR__ . '/../Database/Conexion.php';
+            $this->conexion = Conexion::getInstance();
+        }
     }
 
     // GUARDAR
-    public function guardar($datos) {
+    public function guardar($datos)
+    {
 
         $sql = "INSERT INTO archivos_analizados (nombre_original, tipo_detectado, hash_md5, tamaño, usuario_id) 
         VALUES (?, ?, ?, ?, ?)";
@@ -26,7 +37,8 @@ class ArchivoRepository {
     }
 
     // OBTENER TODOS
-    public function obtenerTodos() {
+    public function obtenerTodos()
+    {
 
         $sql = "SELECT * FROM archivos_analizados ORDER BY fecha_subida DESC";
 
@@ -37,7 +49,8 @@ class ArchivoRepository {
     }
 
     // OBTENER POR ID
-    public function obtenerPorId($id) {
+    public function obtenerPorId($id)
+    {
 
         $sql = "SELECT * FROM archivos_analizados  WHERE id = ?";
 
@@ -48,7 +61,8 @@ class ArchivoRepository {
     }
 
     // ACTUALIZAR
-    public function actualizar($id, $datos) {
+    public function actualizar($id, $datos)
+    {
 
         $sql = "UPDATE archivos_analizados SET nombre_original = ?, tipo_detectado = ?, hash_md5 = ?, tamaño = ?, usuario_id = ?
                 WHERE id = ?";
@@ -66,7 +80,8 @@ class ArchivoRepository {
     }
 
     // ELIMINAR
-    public function eliminar($id) {
+    public function eliminar($id)
+    {
 
         $sql = "DELETE FROM archivos_analizados WHERE id = ?";
 
@@ -75,7 +90,8 @@ class ArchivoRepository {
     }
 
     // FILTRAR POR TIPO
-    public function filtrarPorTipo($tipo) {
+    public function filtrarPorTipo($tipo)
+    {
 
         $sql = "SELECT * FROM archivos_analizados WHERE tipo_detectado = ?";
 
@@ -86,7 +102,8 @@ class ArchivoRepository {
     }
 
     // FILTRAR POR FECHA
-    public function filtrarPorFecha($fechaInicio, $fechaFin) {
+    public function filtrarPorFecha($fechaInicio, $fechaFin)
+    {
 
         $sql = "SELECT * FROM archivos_analizados WHERE fecha_subida BETWEEN ? AND ?";
 
@@ -97,7 +114,8 @@ class ArchivoRepository {
     }
 
     // FILTRAR POR USUARIO
-    public function filtrarPorUsuario($usuarioId) {
+    public function filtrarPorUsuario($usuarioId)
+    {
 
         $sql = "SELECT * FROM archivos_analizados WHERE usuario_id = ?";
 
@@ -108,7 +126,8 @@ class ArchivoRepository {
     }
 
     // BUSCAR POR NOMBRE
-    public function buscarPorNombre($nombre) {
+    public function buscarPorNombre($nombre)
+    {
 
         $sql = "SELECT * FROM archivos_analizados WHERE nombre_original LIKE ?";
 
@@ -117,49 +136,54 @@ class ArchivoRepository {
 
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
-    public function buscarPorHash($hash) {
-    $sql = "SELECT * FROM archivos_analizados WHERE hash_md5 = :hash LIMIT 1";
-    $stmt = $this->conexion->prepare($sql);
-    $stmt->bindParam(':hash', $hash);
-    $stmt->execute();
-    return $stmt->fetch(PDO::FETCH_ASSOC);
-}
-public function registrarAuditoria($usuario, $accion, $archivoId, $descripcion) {
-    $sql = "INSERT INTO auditoria (usuario, accion, archivo_id, descripcion) 
+    public function buscarPorHash($hash)
+    {
+        $sql = "SELECT * FROM archivos_analizados WHERE hash_md5 = :hash LIMIT 1";
+        $stmt = $this->conexion->prepare($sql);
+        $stmt->bindParam(':hash', $hash);
+        $stmt->execute();
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
+    public function registrarAuditoria($usuario, $accion, $archivoId, $descripcion)
+    {
+        $sql = "INSERT INTO auditoria (usuario, accion, archivo_id, descripcion) 
             VALUES (:usuario, :accion, :archivo_id, :descripcion)";
 
-    $stmt = $this->conexion->prepare($sql);
-    $stmt->bindParam(':usuario', $usuario);
-    $stmt->bindParam(':accion', $accion);
-    $stmt->bindParam(':archivo_id', $archivoId);
-    $stmt->bindParam(':descripcion', $descripcion);
+        $stmt = $this->conexion->prepare($sql);
+        $stmt->bindParam(':usuario', $usuario);
+        $stmt->bindParam(':accion', $accion);
+        $stmt->bindParam(':archivo_id', $archivoId);
+        $stmt->bindParam(':descripcion', $descripcion);
 
-    $stmt->execute();
-}
-public function obtenerHistorial($tipo = null, $fecha = null) {
-    $sql = "SELECT * FROM archivos_analizados WHERE 1=1";
-
-    if ($tipo) {
-        $sql .= " AND tipo_detectado = :tipo";
+        $stmt->execute();
     }
+    public function obtenerHistorial($tipo = null, $fecha = null)
+    {
+        $sql = "SELECT * FROM archivos_analizados WHERE 1=1";
 
-    if ($fecha) {
-    $sql .= " AND DATE(fecha_subida) = :fecha";
-}
+        if ($tipo) {
+            $sql .= " AND tipo_detectado = :tipo";
+        }
 
-    $stmt = $this->conexion->prepare($sql);
+        if ($fecha) {
+            $sql .= " AND DATE(fecha_subida) = :fecha";
+        }
 
-    if ($tipo) {
-        $stmt->bindParam(':tipo', $tipo);
+        // ORDER BY debe ir ANTES de prepare()
+        $sql .= " ORDER BY fecha_subida DESC";
+
+        $stmt = $this->conexion->prepare($sql);
+
+        if ($tipo) {
+            $stmt->bindParam(':tipo', $tipo);
+        }
+
+        if ($fecha) {
+            $stmt->bindParam(':fecha', $fecha);
+        }
+
+        $stmt->execute();
+
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
-
-    if ($fecha) {
-        $stmt->bindParam(':fecha', $fecha);
-    }
-    $sql .= " ORDER BY fecha_subida DESC";
-
-    $stmt->execute();
-
-    return $stmt->fetchAll(PDO::FETCH_ASSOC);
-}
 }
