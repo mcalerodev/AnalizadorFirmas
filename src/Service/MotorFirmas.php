@@ -46,8 +46,9 @@ class MotorFirmas
             int ObtenerTotalTiposSoportados();
         ", $rutaDll);
     } catch (\Throwable $e) {
-        $this->ffi     = null;
-        $this->modoExe = true;
+        $this->ffi = null;
+    $this->modoExe = true;
+
     }
 } elseif ($rutaExe !== false && file_exists($rutaExe)) {
     $this->modoExe = true;
@@ -91,11 +92,11 @@ class MotorFirmas
 
         // ── Modo EXE ──────────────────────────────────────────────────────
         if ($this->modoExe) {
-            //lo cambie temporalmente porque me dio error al hacer pruebas, pero lo volvi a poner originalmente
-            /*$rutaExe = realpath(__DIR__ . '/../../engine/motor_firmas.exe');
-            $output  = shell_exec(escapeshellarg($rutaExe) . ' ' . escapeshellarg($ruta));
-            return intval(trim($output));*/
-            return 1;
+            $rutaExe = realpath(__DIR__ . '/../../engine/motor_firmas.exe');
+    $output  = shell_exec(escapeshellarg($rutaExe) . ' ' . escapeshellarg($ruta));
+
+    return intval(trim($output));
+    //return 1;
         }
 
         // ── Modo FFI (DLL x64) ────────────────────────────────────────────

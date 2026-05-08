@@ -16,7 +16,7 @@ class Conexion
     private static $host = "localhost";
     private static $db   = "analizador_firmas";
     private static $user = "root";
-    private static $pass = "";
+    private static $pass = "12345678";
 
     // Constructor privado: nadie puede hacer "new Conexion()" desde afuera
     private function __construct() {}
