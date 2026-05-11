@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="theme.css">
+</head>
+<body>
+      <div class="container">
+
+  <h1>Analizador de Firmas de Archivos</h1>
+  <p>Prueba visual completa con iconos</p>
+
+  <div class="card">
+
+    <!-- BOTONES -->
+    <h2>Botones</h2>
+    <button class="btn-upload">
+      <img src="assets/img/icons/upload.png" class="icon">
+      Subir archivo
+    </button>
+
+    <button class="btn-success">
+      <img src="assets/img/icons/analyze.png" class="icon">
+      Analizar
+    </button>
+
+    <button class="btn-danger">
+      <img src="assets/img/icons/delete.png" class="icon">
+      Eliminar
+    </button>
+
+    <hr>
+
+    <!-- ARCHIVO CARGADO -->
+    <h2>Archivo cargado</h2>
+
+    <p class="message-success">
+      <img src="assets/img/icons/success.png" class="icon">
+      Archivo cargado correctamente
+    </p>
+
+    <div class="file-info">
+      <div class="file-name">
+        <img src="assets/img/icons/pdf.png" class="icon">
+        archivo_ejemplo.pdf
+      </div>
+      <div class="file-size">Tamaño: 1.2 MB</div>
+    </div>
+
+    <hr>
+
+    <!-- RESULTADO SOSPECHOSO -->
+    <h2>Resultado (Archivo sospechoso)</h2>
+
+    <p>
+      <img src="assets/img/icons/pdf.png" class="icon">
+      Tipo declarado: PDF
+    </p>
+
+    <p>
+      <img src="assets/img/icons/exe.png" class="icon">
+      Tipo real: EXE
+    </p>
+
+    <div class="alert alert-danger">
+      <img src="assets/img/icons/warning.png" class="icon">
+      Archivo sospechoso: no coincide con su extensión
+    </div>
+
+    <hr>
+
+    <!-- RESULTADO CORRECTO -->
+    <h2>Resultado (Archivo válido)</h2>
+
+    <p>
+      <img src="assets/img/icons/jpg.png" class="icon">
+      Tipo declarado: JPG
+    </p>
+
+    <p>
+      <img src="assets/img/icons/jpg.png" class="icon">
+      Tipo real: JPG
+    </p>
+
+    <div class="alert alert-success">
+      <img src="assets/img/icons/success.png" class="icon">
+      Archivo válido: coincide con su extensión
+    </div>
+
+  </div>
+
+</div>
+
+</div>
+</body>
+</html>
