@@ -1,0 +1,284 @@
+<?php
+
+session_start();
+
+require_once __DIR__ . '/../../src/Database/Conexion.php';
+require_once __DIR__ . '/../../src/Repository/ArchivoRepository.php';
+
+$conexion = Conexion::getInstance();
+$repo = new ArchivoRepository($conexion);
+
+// =====================
+// ELIMINAR UNO
+// =====================
+if (isset($_GET['eliminar'])) {
+    $repo->eliminar($_GET['eliminar']);
+    header("Location: historial.php");
+    exit;
+}
+
+// =====================
+// ELIMINAR MÚLTIPLES
+// =====================
+if (isset($_POST['eliminar_varios'])) {
+    if (!empty($_POST['ids'])) {
+        foreach ($_POST['ids'] as $id) {
+            $repo->eliminar($id);
+        }
+    }
+    header("Location: historial.php");
+    exit;
+}
+
+// =====================
+// FILTROS
+// =====================
+$tipo   = $_GET['tipo'] ?? null;
+$fecha  = $_GET['fecha'] ?? null;
+$buscar = $_GET['buscar'] ?? null;
+
+// =====================
+// PAGINACIÓN
+// =====================
+$pagina = isset($_GET['pagina']) ? (int)$_GET['pagina'] : 1;
+$limite = 5;
+$offset = ($pagina - 1) * $limite;
+
+// Datos base
+$archivos = $repo->obtenerHistorial($tipo, $fecha);
+
+// BUSCAR
+if ($buscar) {
+    $archivos = array_filter($archivos, function ($a) use ($buscar) {
+        return stripos($a['nombre_original'], $buscar) !== false;
+    });
+}
+
+// total
+$total = count($archivos);
+$paginas = ceil($total / $limite);
+
+// slice paginación
+$archivos = array_slice($archivos, $offset, $limite);
+
+?>
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Historial</title>
+
+<style>
+
+body{
+    font-family: Arial;
+    background:#f4f6f9;
+    padding:40px;
+}
+
+.container{
+    max-width:1000px;
+    margin:auto;
+    background:white;
+    padding:20px;
+    border-radius:10px;
+}
+
+table{
+    width:100%;
+    border-collapse:collapse;
+    margin-top:15px;
+}
+
+th{
+    background:#1976d2;
+    color:white;
+    padding:10px;
+}
+
+td{
+    padding:10px;
+    border:1px solid #ddd;
+    vertical-align: middle;
+}
+
+.filters{
+    margin-bottom:20px;
+}
+
+button{
+    padding:8px 12px;
+    background:#1976d2;
+    color:white;
+    border:none;
+    cursor:pointer;
+}
+
+.delete{
+    background:red;
+}
+
+.download{
+    background:green;
+    color:white;
+    padding:6px 10px;
+    text-decoration:none;
+    border-radius:5px;
+}
+
+/* 🔥 GALERÍA */
+.preview{
+    width:60px;
+    height:60px;
+    object-fit:cover;
+    border-radius:8px;
+    transition:0.3s;
+}
+
+.preview:hover{
+    transform: scale(2);
+}
+
+.icon{
+    font-size:28px;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<h2>Historial de Análisis</h2>
+
+<!-- ================= FILTROS ================= -->
+<form method="GET" class="filters">
+
+    <input type="text" name="buscar" placeholder="Buscar nombre">
+
+    <input type="date" name="fecha">
+
+    <select name="tipo">
+        <option value="">Todos</option>
+        <option value="PDF">PDF</option>
+        <option value="JPG">JPG</option>
+        <option value="DOCX">DOCX</option>
+        <option value="ZIP">ZIP</option>
+    </select>
+
+    <button type="submit">Filtrar</button>
+
+</form>
+
+<!-- ================= TABLA ================= -->
+<form method="POST">
+
+<table>
+
+<tr>
+    <th><input type="checkbox" onclick="toggle(this)"></th>
+    <th>ID</th>
+    <th>Archivo</th>
+    <th>Tipo</th>
+    <th>Tamaño</th>
+    <th>Fecha</th>
+    <th>Acciones</th>
+</tr>
+
+<?php foreach ($archivos as $a): ?>
+
+<?php
+$ext = strtolower(pathinfo($a['nombre_original'], PATHINFO_EXTENSION));
+?>
+
+<tr>
+
+    <td>
+        <input type="checkbox" name="ids[]" value="<?= $a['id'] ?>">
+    </td>
+
+    <td><?= $a['id'] ?></td>
+
+    <!-- 🔥 GALERÍA VISUAL -->
+    <td title="Subido: <?= $a['fecha_subida'] ?> | Tamaño: <?= $a['tamaño'] ?>">
+
+        <?php if (in_array($ext, ['jpg','jpeg','png'])): ?>
+
+            <img class="preview"
+                 src="descargar.php?id=<?= $a['id'] ?>">
+
+        <?php elseif ($ext == 'pdf'): ?>
+            <span class="icon">📄</span>
+
+        <?php elseif ($ext == 'docx'): ?>
+            <span class="icon">📝</span>
+
+        <?php elseif ($ext == 'zip'): ?>
+            <span class="icon">🗜</span>
+
+        <?php else: ?>
+            <span class="icon">📁</span>
+
+        <?php endif; ?>
+
+        <?= htmlspecialchars($a['nombre_original']) ?>
+
+    </td>
+
+    <td><?= $a['tipo_detectado'] ?></td>
+    <td><?= $a['tamaño'] ?></td>
+    <td><?= $a['fecha_subida'] ?></td>
+
+    <td>
+
+        <!-- ELIMINAR -->
+        <a href="historial.php?eliminar=<?= $a['id'] ?>">
+            <button type="button" class="delete">Eliminar</button>
+        </a>
+
+        <!-- DESCARGA-->
+        <a href="historial.php?download=<?= $a['id'] ?>" class="download">
+    Descargar
+</a>
+
+
+    </td>
+
+</tr>
+
+<?php endforeach; ?>
+
+</table>
+
+<br>
+
+<button type="submit" name="eliminar_varios" class="delete">
+Eliminar seleccionados
+</button>
+
+</form>
+
+<!-- ================= PAGINACIÓN ================= -->
+<br>
+
+<?php for ($i = 1; $i <= $paginas; $i++): ?>
+    <a href="?pagina=<?= $i ?>">
+        <button type="button"><?= $i ?></button>
+    </a>
+<?php endfor; ?>
+
+</div>
+
+<script>
+function toggle(source){
+    let checkboxes = document.getElementsByName('ids[]');
+    for(let i=0;i<checkboxes.length;i++){
+        checkboxes[i].checked = source.checked;
+    }
+}
+</script>
+
+</body>
+</html>
