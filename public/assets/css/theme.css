@@ -63,46 +63,55 @@ p {
 .login {
   border-radius: 10px;
   padding: 25px;
-  max-width: 400px; 
+  max-width: 400px;
   margin: 80px auto;
   width: 100%;
   display: flex;
-  flex-direction: column; /* Alinea los hijos en vertical */
-  align-items: stretch;    /* Centra los hijos horizontalmente */
+  flex-direction: column;
+  /* Alinea los hijos en vertical */
+  align-items: stretch;
+  /* Centra los hijos horizontalmente */
 }
 
-h1.login{
-  text-align: center; 
+h1.login {
+  text-align: center;
 }
 
 .login input {
-  display: block; /* Asegura que tome su propia línea */
+  display: block;
+  /* Asegura que tome su propia línea */
   width: 100%;
   padding: 10px;
   margin: 8px 0;
   box-sizing: border-box;
 }
 
-.login button{
-  width: 100%; 
-  padding: 10px; 
-  background: #388e3c; 
-  color: white; 
-  border: none; 
-  border-radius: 4px; 
+.login input:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 8px rgba(24, 91, 199, 0.2);
+  /* Un brillo muy suave */
+}
+
+.login button {
+  width: 100%;
+  padding: 10px;
+  background: #388e3c;
+  color: white;
+  border: none;
+  border-radius: 4px;
   cursor: pointer;
 }
 
-.login .error{
+.login .error {
   color: var(--color-danger);
   margin-top: 10px;
 }
 
-.login .ok{
+.login .ok {
   color: var(--color-success);
-  background: #c5fcca; 
-  border: 1px solid #4caf50; 
-  padding: 10px; 
+  background: #c5fcca;
+  border: 1px solid #4caf50;
+  padding: 10px;
   border-radius: 4px;
   margin-top: 10px;
 }
@@ -110,6 +119,7 @@ h1.login{
 .login .link {
   text-align: center;
 }
+
 /* ===== BOTONES ===== */
 button {
   border: none;
@@ -230,69 +240,111 @@ button {
   vertical-align: middle;
 }
 
-/* ==== LINKS ==== */
-a.api-links {
-  margin-top: 30px;
-  font-size: 0.9em;
-  display: inline-block;
-  margin-right: 12px;
-  color: var(--color-links);
-  text-decoration: none;
+/* ==== CONTENEDORES DE RESPUESTA ==== */
+.resultado {
+  background-color: var(--color-card); /* Cambiado a tu azul oscuro */
+  border: 1px solid var(--color-success); /* Borde verde sutil de éxito */
+  padding: 20px;
+  border-radius: 10px;
+  margin-top: 20px;
 }
 
-a.api-links:hover {
-  text-decoration: underline; /* Aparece el subrayado */
-  color: rgb(28, 78, 241);
+.resultado h3 {
+  color: var(--color-success);
+  margin-top: 0;
 }
 
-/* ==== TABLAS ==== */
+/* Esta clase da el espacio después de la tabla */
+.tabla-contenedor {
+  margin-bottom: 30px; 
+}
+
+/* ==== TABLAS CORE ==== */
 table {
-  border-collapse: collapse;
   width: 100%;
+  border-spacing: 0;
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  overflow: hidden;
 }
 
-th,
-td {
-  padding: 8px;
+th, td {
+  padding: 12px;
   text-align: left;
-  padding: 8px;
-  border-bottom: 1px solid #ddd;
+  border-bottom: 1px solid var(--color-border);
+  color: var(--color-text);
 }
 
+/* Estilo para la columna de etiquetas */
 td:first-child {
   font-weight: bold;
-  width: 160px;
+  width: 180px;
+  color: var(--color-text-soft); /* Un tono más suave para etiquetas */
+  background-color: rgba(255, 255, 255, 0.03); /* Fondo muy sutil */
+}
+
+tr:last-child td {
+  border-bottom: none;
 }
 
 tr:hover {
-  /* Un blanco al 10% crea un efecto de brillo elegante sobre fondo oscuro */
-  background-color: rgba(255, 255, 255, 0.1) !important;
-  /* Forzamos que el texto brille más en el hover */
-  color: #ffffff !important;
+  background-color: rgba(255, 255, 255, 0.05) !important;
   transition: background-color 0.2s ease;
-  cursor: pointer;
 }
 
-.resultado {
-  background: #e8f5e9;
-  border: 1px solid #4caf50;
-  padding: 16px;
-  border-radius: 6px;
-  margin-top: 20px;
-}
-
+/* ==== ALERTAS Y OTROS ==== */
 .error {
-  background: #ffebee;
-  border: 1px solid #f44336;
+  background-color: rgba(220, 38, 38, 0.1); /* Rojo oscuro transparente */
+  border: 1px solid var(--color-danger);
+  color: var(--color-text);
   padding: 16px;
-  border-radius: 6px;
+  border-radius: 10px;
   margin-top: 20px;
+}
+
+/* ==== SECCIÓN DE ENDPOINTS (El contenedor) ==== */
+div.api-links {
+  margin-top: 40px;         /* Separa todo el bloque de la tabla de arriba */
+  padding-top: 20px;
+  border-top: 1px solid var(--color-border); /* Línea divisoria sutil */
+}
+
+.endpoints-title {
+  display: block;           /* Hace que el título ocupe su propia línea */
+  margin-bottom: 15px;      /* Espacio entre el título y los enlaces */
+  color: var(--color-text);
+  font-size: 1em;
+  font-weight: bold;
+}
+
+/* ==== LINKS INDIVIDUALES ==== */
+a.api-links {
+  display: inline-block;
+  margin-right: 20px;       /* Espacio horizontal entre enlaces */
+  margin-bottom: 10px;      /* Espacio vertical por si se amontonan en móvil */
+  font-size: 0.9em;
+  color: var(--color-links);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+a.api-links:hover {
+  text-decoration: underline;
+  color: rgb(28, 78, 241);  /* Tu azul de hover */
+}
+
+/* Para el texto que no es link (el POST) */
+div.api-links span {
+  font-size: 0.9em;
+  margin-right: 20px;
+  color: var(--color-text-soft);
 }
 
 input[type=file] {
   margin: 12px 0;
 }
 
+/* ==== CURSOR ==== */
 a,
 button,
 table,
@@ -312,20 +364,7 @@ span {
   user-select: none;
 }
 
-input {
-  border: 1px solid var(--color-border); /* Un borde sutil */
-  padding: 10px 15px;
-  border-radius: 6px;
-  outline: none;
-  font-family: var(--font-main);
-}
-
-input:focus {
-  border-color: var(--color-primary);
-  box-shadow: 0 0 8px rgba(24, 91, 199, 0.2); /* Un brillo muy suave */
-}
-
-/* Pagina responsiva */
+/* ==== WEB RESPONSIVE ==== */
 @media (max-width: 600px) {
   body {
     font-size: 14px;
