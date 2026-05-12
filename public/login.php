@@ -38,18 +38,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </head>
 
 <body>
-    <div class="container">
+    <div class="login">
         <form method="POST">
             <h1>Login</h1>
-            <div class="card">
-                <input type="email" name="correo" placeholder="Correo" required><br><br>
-                <input type="password" name="clave" placeholder="Clave" required><br><br>
-                <button class="button btn-upload " type="submit">Ingresar</button>
+            <input type="email" name="correo" placeholder="Correo" required>
+            <input type="password" name="clave" placeholder="Clave" required>
+            <button class="button btn-upload " type="submit">Ingresar</button>
 
-                <?php if ($error): ?>
-                <p style="color:red;"><?= $error ?></p>
-                <?php endif; ?>
+            <?php if ($error): ?>
+            <div class="error">
+                <?= htmlspecialchars($error) ?>
             </div>
+            <?php endif; ?>
+
         </form>
     </div>
 </body>
