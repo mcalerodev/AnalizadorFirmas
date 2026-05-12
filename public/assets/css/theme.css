@@ -27,14 +27,8 @@ body {
   font-family: var(--font-main);
   background-color: var(--color-bg);
   color: var(--color-text);
-}
 
-@media (max-width: 600px) {
-  body {
-    font-size: 14px; /* Achica la letra para que quepa mejor */
-  }
 }
-
 
 /* ===== TITULOS ===== */
 h1 {
@@ -42,6 +36,7 @@ h1 {
   font-weight: 300;
   border-bottom: 1px solid var(--color-border);
   padding-bottom: 10px;
+
 }
 
 p {
@@ -192,17 +187,22 @@ a.api-links {
   color: var(--color-links);
   text-decoration: none;
 }
+
 a.api-links:hover {
-  text-decoration: underline; /* Aparece el subrayado */
-  color: #e0e0e0;             /* Opcional: un gris claro para que se note el cambio */
+  text-decoration: underline;
+  /* Aparece el subrayado */
+  color: #e0e0e0;
+  /* Opcional: un gris claro para que se note el cambio */
 }
+
 /* ==== TABLAS ==== */
 table {
   border-collapse: collapse;
   width: 100%;
 }
 
-th, td {
+th,
+td {
   padding: 8px;
   text-align: left;
   padding: 8px;
@@ -216,9 +216,9 @@ td:first-child {
 
 tr:hover {
   /* Un blanco al 10% crea un efecto de brillo elegante sobre fondo oscuro */
-  background-color: rgba(255, 255, 255, 0.1) !important; 
+  background-color: rgba(255, 255, 255, 0.1) !important;
   /* Forzamos que el texto brille más en el hover */
-  color: #ffffff !important; 
+  color: #ffffff !important;
   transition: background-color 0.2s ease;
   cursor: pointer;
 }
@@ -241,4 +241,48 @@ tr:hover {
 
 input[type=file] {
   margin: 12px 0;
+}
+
+a,
+button,
+table,
+th,
+tr,
+td .api-links {
+  cursor: pointer;
+  user-select: none;
+}
+
+h1,
+h3,
+p,
+strong,
+span {
+  cursor: default;
+  user-select: none;
+}
+
+input {
+  border: 1px solid var(--color-border);
+  /* Un borde sutil */
+  padding: 10px 15px;
+  border-radius: 6px;
+  outline: none;
+  font-family: var(--font-main);
+}
+
+/* Pagina responsiva */
+@media (max-width: 600px) {
+  body {
+    font-size: 14px;
+    /* Achica la letra para que quepa mejor */
+  }
+
+  .table-wrapper {
+    width: 100%;
+    overflow-x: auto;
+    /* Activa el scroll horizontal si la tabla es muy ancha */
+    -webkit-overflow-scrolling: touch;
+    /* Suavidad en móviles */
+  }
 }

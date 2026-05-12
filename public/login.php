@@ -27,14 +27,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 ?>
+<!DOCTYPE html>
+<html lang="en">
 
-<form method="POST">
-    <h2>Login</h2>
-    <input type="email" name="correo" placeholder="Correo" required><br><br>
-    <input type="password" name="clave" placeholder="Clave" required><br><br>
-    <button type="submit">Ingresar</button>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - AnalizadorFirmas</title>
+    <link rel="stylesheet" href="assets/css/theme.css">
+</head>
 
-    <?php if ($error): ?>
-        <p style="color:red;"><?= $error ?></p>
-    <?php endif; ?>
-</form>
+<body>
+    <div class="container">
+        <form method="POST">
+            <h1>Login</h1>
+            <div class="card">
+                <input type="email" name="correo" placeholder="Correo" required><br><br>
+                <input type="password" name="clave" placeholder="Clave" required><br><br>
+                <button class="button btn-upload " type="submit">Ingresar</button>
+
+                <?php if ($error): ?>
+                <p style="color:red;"><?= $error ?></p>
+                <?php endif; ?>
+            </div>
+        </form>
+    </div>
+</body>
+
+</html>
