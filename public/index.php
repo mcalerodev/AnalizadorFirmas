@@ -67,6 +67,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta charset="UTF-8">
     <a href="logout.php">Cerrar sesión</a>
     <title>AnalizadorFirmas — Prueba</title>
+    <link rel="stylesheet" href="assets/css/theme.css">
     <style>
         body {
             font-family: Arial, sans-serif;
