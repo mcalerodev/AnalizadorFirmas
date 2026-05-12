@@ -69,7 +69,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="assets/css/theme.css">
 </head>
-<!-- Elimine la etiqueta <style> de aca y lo pase a assets/css/theme.css-->
+<!-- Elimine la etiqueta <style> de aca y lo pase a assets/css/theme.css para llevar un orden-->
 <body>
     <div class="container">
         <a class="api-links" href="logout.php">Cerrar sesión</a>
