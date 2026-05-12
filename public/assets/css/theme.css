@@ -58,6 +58,57 @@ p {
   margin-top: 20px;
 }
 
+/* ==== LOGIN Y REGISTRO ===== */
+
+.login {
+  border-radius: 10px;
+  padding: 25px;
+  max-width: 400px; 
+  margin: 80px auto;
+  display: flex;
+  flex-direction: column; /* Alinea los hijos en vertical */
+  align-items: stretch;    /* Centra los hijos horizontalmente */
+}
+
+h1.login{
+  text-align: center; 
+}
+
+.login input {
+  display: block; /* Asegura que tome su propia línea */
+  width: 100%;
+  padding: 10px;
+  margin: 8px 0;
+  box-sizing: border-box;
+}
+
+.login button{
+  width: 100%; 
+  padding: 10px; 
+  background: #388e3c; 
+  color: white; 
+  border: none; 
+  border-radius: 4px; 
+  cursor: pointer;
+}
+
+.login .error{
+  color: var(--color-danger);
+  margin-top: 10px;
+}
+
+.login .ok{
+  color: var(--color-success);
+  background: #c5fcca; 
+  border: 1px solid #4caf50; 
+  padding: 10px; 
+  border-radius: 4px;
+  margin-top: 10px;
+}
+
+.login .link {
+  text-align: center;
+}
 /* ===== BOTONES ===== */
 button {
   border: none;
@@ -263,12 +314,16 @@ span {
 }
 
 input {
-  border: 1px solid var(--color-border);
-  /* Un borde sutil */
+  border: 1px solid var(--color-border); /* Un borde sutil */
   padding: 10px 15px;
   border-radius: 6px;
   outline: none;
   font-family: var(--font-main);
+}
+
+input:focus {
+  border-color: var(--color-primary); /* Se ilumina con tu azul primario */
+  box-shadow: 0 0 8px rgba(59, 130, 246, 0.2); /* Un brillo muy suave */
 }
 
 /* Pagina responsiva */

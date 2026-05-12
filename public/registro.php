@@ -43,38 +43,34 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 ?>
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Registro — AnalizadorFirmas</title>
-    <style>
-        body   { font-family: Arial, sans-serif; max-width: 400px; margin: 80px auto; }
-        h2     { text-align: center; }
-        input  { width: 100%; padding: 10px; margin: 8px 0; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; }
-        button { width: 100%; padding: 10px; background: #388e3c; color: white; border: none; border-radius: 4px; cursor: pointer; }
-        .error { background: #ffebee; border: 1px solid #f44336; padding: 10px; border-radius: 4px; margin-bottom: 12px; }
-        .ok    { background: #e8f5e9; border: 1px solid #4caf50; padding: 10px; border-radius: 4px; margin-bottom: 12px; }
-        .link  { text-align: center; margin-top: 14px; font-size: 0.9em; }
-    </style>
+    <link rel="stylesheet" href="assets/css/theme.css">
 </head>
+
 <body>
-    <h2>📝 Crear cuenta</h2>
+    <div class="login">
+        <h1>Crear cuenta</h1>
 
-    <?php if ($error): ?>
+        <?php if ($error): ?>
         <div class="error">❌ <?= htmlspecialchars($error) ?></div>
-    <?php endif; ?>
-    <?php if ($exito): ?>
+        <?php endif; ?>
+        <?php if ($exito): ?>
         <div class="ok">✅ <?= $exito ?></div>
-    <?php endif; ?>
-
-    <form method="POST">
-        <input type="email"    name="correo"   placeholder="Correo electrónico" required>
-        <input type="password" name="clave"    placeholder="Contraseña (mín. 6 caracteres)" required>
-        <input type="password" name="repetir"  placeholder="Repetir contraseña" required>
-        <button type="submit">Registrarse</button>
-    </form>
-
-    <div class="link">
-        ¿Ya tienes cuenta? <a href="login.php">Inicia sesión</a>
+        <?php endif; ?>
+            <form method="POST">
+                <input type="email" name="correo" placeholder="Correo electrónico" required>
+                <input type="password" name="clave" placeholder="Contraseña (mín. 6 caracteres)" required>
+                <input type="password" name="repetir" placeholder="Repetir contraseña" required>
+                <button type="submit">Registrarse</button>
+            </form>
+            <div class="link">
+                ¿Ya tienes cuenta? <a class="api-links" href="login.php">Inicia sesión</a>
+            </div>
     </div>
 </body>
+
 </html>
