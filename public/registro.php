@@ -33,7 +33,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $hash = password_hash($clave, PASSWORD_DEFAULT);
                 $stmt = $conexion->prepare("INSERT INTO usuario (correo, clave) VALUES (?, ?)");
                 $stmt->execute([$correo, $hash]);
-                $exito = "Cuenta creada correctamente. <a href='login.php'>Inicia sesión</a>.";
+                $exito = "Cuenta creada correctamente. <a href='login.php' class='link-iniciar-sesion'>Inicia sesión</a>";
             }
         } catch (Exception $e) {
             $error = "Error del servidor: " . $e->getMessage();
@@ -59,7 +59,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <div class="error">❌ <?= htmlspecialchars($error) ?></div>
         <?php endif; ?>
         <?php if ($exito): ?>
-        <div class="ok">✅ <?= $exito ?></div>
+        <div class="ok">✅ <?= ($exito) ?></div>
         <?php endif; ?>
             <form method="POST">
                 <input type="email" name="correo" placeholder="Correo electrónico" required>
@@ -68,7 +68,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <button type="submit">Registrarse</button>
             </form>
             <div class="link">
-                ¿Ya tienes cuenta? <a class="api-links" href="login.php">Inicia sesión</a>
+                ¿Ya tienes cuenta? <a class="link-iniciar-sesion" href="login.php">Inicia sesión</a>
             </div>
     </div>
 </body>
