@@ -56,6 +56,7 @@ p {
   border-radius: 10px;
   padding: 25px;
   margin-top: 20px;
+  user-select: none;  
 }
 
 /* ==== LOGIN Y REGISTRO ===== */
@@ -307,11 +308,12 @@ div.api-links {
   margin-top: 40px;         /* Separa todo el bloque de la tabla de arriba */
   padding-top: 20px;
   border-top: 1px solid var(--color-border); /* Línea divisoria sutil */
+  user-select: none;
 }
 
 .endpoints-title {
   display: block;           /* Hace que el título ocupe su propia línea */
-  margin-bottom: 15px;      /* Espacio entre el título y los enlaces */
+  margin-bottom: 5px;      /* Espacio entre el título y los enlaces */
   color: var(--color-text);
   font-size: 1em;
   font-weight: bold;
@@ -350,7 +352,7 @@ button,
 table,
 th,
 tr,
-td .api-links {
+td {
   cursor: pointer;
   user-select: none;
 }
@@ -361,7 +363,8 @@ p,
 strong,
 span {
   cursor: default;
-  user-select: none;
+  user-select: text;
+  caret-color: transparent;
 }
 
 /* ==== WEB RESPONSIVE ==== */
