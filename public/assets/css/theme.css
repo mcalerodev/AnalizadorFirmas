@@ -27,7 +27,6 @@ body {
   font-family: var(--font-main);
   background-color: var(--color-bg);
   color: var(--color-text);
-
 }
 
 /* ===== TITULOS ===== */
@@ -61,7 +60,6 @@ p {
 /* ==== LOGIN Y REGISTRO ===== */
 
 .login {
-  border-radius: 10px;
   padding: 25px;
   max-width: 400px;
   margin: 80px auto;
@@ -73,8 +71,9 @@ p {
   /* Centra los hijos horizontalmente */
 }
 
-h1.login {
+.login h1 {
   text-align: center;
+  width: 100%; /* Asegura que ocupe todo el espacio para centrar el texto */
 }
 
 .login input {
@@ -84,11 +83,13 @@ h1.login {
   padding: 10px;
   margin: 8px 0;
   box-sizing: border-box;
+  border-radius: 10px;
 }
 
 .login input:focus {
   border-color: var(--color-primary);
   box-shadow: 0 0 8px rgba(24, 91, 199, 0.2);
+  outline: none;
   /* Un brillo muy suave */
 }
 
@@ -102,22 +103,42 @@ h1.login {
   cursor: pointer;
 }
 
+/* Estilo idéntico para ambas cajas de mensaje */
+.login .error, 
+.login .ok {
+  margin-top: 10px;
+  padding: 10px; /* Añade espacio interno para que el borde no pegue al texto */
+  border-radius: 4px; /* Opcional: suaviza las esquinas */
+  display: block; /* Asegura el mismo comportamiento de bloque */
+}
+
+/* Solo cambian los colores específicos */
 .login .error {
   color: var(--color-danger);
-  margin-top: 10px;
+  border: 1px solid #af4c4c;
+  background-color: rgba(175, 76, 76, 0.1); /* Opcional: fondo suave */
 }
 
 .login .ok {
   color: var(--color-success);
-  background: #c5fcca;
-  border: 1px solid #4caf50;
-  padding: 10px;
-  border-radius: 4px;
-  margin-top: 10px;
+  border: 1px solid #4faf4c;
+  background-color: rgba(79, 175, 76, 0.1); /* Opcional: fondo suave */
 }
 
 .login .link {
   text-align: center;
+  padding: 10px;
+}
+
+.login .link-iniciar-sesion{
+  color: var(--color-links);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+a.link-iniciar-sesion:hover {
+  text-decoration: underline;
+  color: rgb(28, 78, 241);  /* Tu azul de hover */
 }
 
 /* ===== BOTONES ===== */
