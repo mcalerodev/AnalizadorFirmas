@@ -123,22 +123,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             ?> <h3> Historial de archivos</h3>
 
             <table>
-                <tr>
-                    <th>ID</th>
-                    <th>Nombre</th>
-                    <th>Tipo</th>
-                    <th>Tamaño</th>
-                    <th>Fecha</th>
-                </tr>
-
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Nombre</th>
+                        <th>Tipo</th>
+                        <th>Tamaño</th>
+                        <th>Fecha</th>
+                    </tr>
+                </thead>
                 <?php foreach ($archivos as $a): ?>
-                <tr>
-                    <td><?= $a['id'] ?></td>
-                    <td><?= htmlspecialchars($a['nombre_original']) ?></td>
-                    <td><?= $a['tipo_detectado'] ?></td>
-                    <td><?= $a['tamaño'] ?></td>
-                    <td><?= $a['fecha_subida'] ?></td>
-                </tr>
+                <tbody>
+                    <tr>
+                        <td><?= $a['id'] ?></td>
+                        <td><?= htmlspecialchars($a['nombre_original']) ?></td>
+                        <td><?= $a['tipo_detectado'] ?></td>
+                        <td><?= $a['tamaño'] ?></td>
+                        <td><?= $a['fecha_subida'] ?></td>
+                    </tr>
+                </tbody>
                 <?php endforeach; ?>
             </table>
 

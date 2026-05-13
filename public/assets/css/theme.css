@@ -290,6 +290,11 @@ table {
   overflow: hidden;
 }
 
+th {
+  /* Reemplaza #1a1a1a por el color de fondo exacto de tu sitio web */
+  background-color:  rgba(255, 255, 255, 0.05) !important;; 
+}
+
 th, td {
   padding: 12px;
   text-align: left;
@@ -309,7 +314,7 @@ tr:last-child td {
   border-bottom: none;
 }
 
-tr:hover {
+tbody tr:hover {
   background-color: rgba(255, 255, 255, 0.05) !important;
   transition: background-color 0.2s ease;
 }
