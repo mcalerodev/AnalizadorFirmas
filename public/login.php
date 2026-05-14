@@ -2,11 +2,17 @@
 session_start();
 require_once __DIR__ . '/../src/Database/Conexion.php';
 
+// Redirigir si ya está logueado
+if (!empty($_SESSION['usuario_id'])) {
+    header('Location: index.php');
+    exit;
+}
+
 $error = null;
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $correo = $_POST['correo'];
-    $clave  = $_POST['clave'];
+    $correo = trim($_POST['correo'] ?? '');
+    $clave  = $_POST['clave'] ?? '';
 
     $conexion = Conexion::getInstance();
 
@@ -28,30 +34,49 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 ?>
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - AnalizadorFirmas</title>
+    <title>Iniciar sesión — AnalizadorFirmas</title>
     <link rel="stylesheet" href="assets/css/theme.css">
 </head>
 
 <body>
-    <div class="login">
-        <form method="POST">
-            <h1>Login</h1>
-            <input type="email" name="correo" placeholder="Correo" required>
-            <input type="password" name="clave" placeholder="Clave" required>
-            <button class="button btn-upload " type="submit">Ingresar</button>
+    <div class="login" role="main">
+        <form method="POST" aria-label="Formulario de inicio de sesión" novalidate>
+            <h1>Iniciar sesión</h1>
 
             <?php if ($error): ?>
-            <div class="error">
-                <?= htmlspecialchars($error) ?>
-            </div>
+                <div class="error" role="alert" aria-live="assertive">
+                    ❌ <?= htmlspecialchars($error) ?>
+                </div>
             <?php endif; ?>
 
+            <label for="correo">Correo electrónico</label>
+            <input type="email" id="correo" name="correo"
+                placeholder="tucorreo@ejemplo.com"
+                autocomplete="email"
+                aria-required="true"
+                required>
+
+            <label for="clave">Contraseña</label>
+            <input type="password" id="clave" name="clave"
+                placeholder="Tu contraseña"
+                autocomplete="current-password"
+                aria-required="true"
+                required>
+
+            <button type="submit" aria-label="Iniciar sesión">Ingresar</button>
         </form>
+
+        <div class="link">
+            ¿No tienes cuenta? <a class="link-iniciar-sesion" href="registro.php">Regístrate</a>
+        </div>
+        <div class="link">
+            <a class="link-iniciar-sesion" href="index.php">← Volver al inicio</a>
+        </div>
     </div>
 </body>
 

@@ -1,0 +1,565 @@
+<?php session_start(); ?>
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ayuda — AnalizadorFirmas</title>
+    <link rel="stylesheet" href="assets/css/theme.css">
+    <style>
+        /* ── Navbar ─────────────────────────────── */
+        nav {
+            background: #1565c0;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 24px;
+            height: 56px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, .3);
+        }
+
+        nav .brand {
+            font-size: 1.2rem;
+            font-weight: 700;
+        }
+
+        nav .nav-links {
+            display: flex;
+            gap: 16px;
+        }
+
+        nav .nav-links a {
+            color: rgba(255, 255, 255, .85);
+            text-decoration: none;
+            font-size: .9rem;
+            padding: 6px 12px;
+            border-radius: 4px;
+        }
+
+        nav .nav-links a:hover,
+        nav .nav-links a.active {
+            background: rgba(255, 255, 255, .2);
+            color: white;
+        }
+
+        /* ── Layout ─────────────────────────────── */
+        body {
+            background: #f0f2f5;
+            color: #333;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            margin: 0;
+        }
+
+        main {
+            max-width: 860px;
+            margin: 36px auto;
+            padding: 0 16px;
+            display: grid;
+            gap: 24px;
+        }
+
+        /* ── Hero ───────────────────────────────── */
+        .hero {
+            background: linear-gradient(135deg, #1565c0 0%, #1976d2 100%);
+            color: white;
+            border-radius: 12px;
+            padding: 36px 32px;
+            text-align: center;
+        }
+
+        .hero h1 {
+            font-size: 1.8rem;
+            margin-bottom: 8px;
+        }
+
+        .hero p {
+            opacity: .85;
+            font-size: 1rem;
+        }
+
+        /* ── Cards ──────────────────────────────── */
+        .card {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, .07);
+            padding: 28px;
+        }
+
+        .card h2 {
+            font-size: 1.05rem;
+            color: #1565c0;
+            margin-bottom: 18px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border-bottom: 2px solid #e3f2fd;
+            padding-bottom: 10px;
+        }
+
+        /* ── FAQ accordion ───────────────────────── */
+        .faq-item {
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .faq-item:last-child {
+            border-bottom: none;
+        }
+
+        .faq-btn {
+            width: 100%;
+            text-align: left;
+            background: none;
+            border: none;
+            padding: 14px 4px;
+            font-size: .95rem;
+            font-weight: 600;
+            color: #1976d2;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 8px;
+            transition: color .2s;
+        }
+
+        .faq-btn:hover {
+            color: #1565c0;
+        }
+
+        .faq-btn .arrow {
+            transition: transform .25s;
+            font-style: normal;
+            flex-shrink: 0;
+        }
+
+        .faq-btn[aria-expanded="true"] .arrow {
+            transform: rotate(90deg);
+        }
+
+        .faq-body {
+            display: none;
+            padding: 0 4px 14px;
+            color: #555;
+            font-size: .9rem;
+            line-height: 1.7;
+        }
+
+        .faq-body.open {
+            display: block;
+        }
+
+        /* ── Pasos de instalación ────────────────── */
+        .steps {
+            list-style: none;
+            counter-reset: step;
+            padding: 0;
+        }
+
+        .steps li {
+            counter-increment: step;
+            display: flex;
+            gap: 14px;
+            align-items: flex-start;
+            margin-bottom: 14px;
+            font-size: .9rem;
+            color: #444;
+            line-height: 1.6;
+        }
+
+        .steps li::before {
+            content: counter(step);
+            background: #1976d2;
+            color: white;
+            border-radius: 50%;
+            width: 26px;
+            height: 26px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: .8rem;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+
+        code {
+            background: #f0f4ff;
+            border: 1px solid #c5d3f7;
+            border-radius: 4px;
+            padding: 2px 6px;
+            font-size: .85rem;
+            font-family: 'Consolas', monospace;
+        }
+
+        /* ── Tabla tipos de archivo ──────────────── */
+        .tipos-tabla {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: .88rem;
+        }
+
+        .tipos-tabla th {
+            background: #1565c0;
+            color: white;
+            padding: 9px 12px;
+            text-align: left;
+        }
+
+        .tipos-tabla td {
+            padding: 8px 12px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .tipos-tabla tr:hover td {
+            background: #f5f7ff;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 2px 9px;
+            border-radius: 10px;
+            font-size: .78rem;
+            font-weight: 700;
+        }
+
+        /* ── Glosario ────────────────────────────── */
+        .glosario dt {
+            font-weight: 700;
+            color: #1565c0;
+            margin-top: 12px;
+        }
+
+        .glosario dd {
+            margin-left: 16px;
+            color: #555;
+            font-size: .9rem;
+            line-height: 1.6;
+        }
+
+        /* ── Botón volver ────────────────────────── */
+        .btn-volver {
+            display: inline-block;
+            padding: 9px 20px;
+            background: #1976d2;
+            color: white;
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: .9rem;
+            transition: background .2s;
+        }
+
+        .btn-volver:hover {
+            background: #1565c0;
+        }
+
+        /* ── Responsive ──────────────────────────── */
+        @media (max-width: 600px) {
+            nav .nav-links {
+                gap: 8px;
+            }
+
+            nav .nav-links a {
+                padding: 4px 8px;
+                font-size: .82rem;
+            }
+
+            .hero {
+                padding: 24px 18px;
+            }
+
+            .hero h1 {
+                font-size: 1.4rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- ── Navbar ─────────────────────────────────────────── -->
+    <nav role="navigation" aria-label="Navegación principal">
+        <div class="brand">🔍 AnalizadorFirmas</div>
+        <div class="nav-links">
+            <a href="index.php">Analizar</a>
+            <a href="ayuda.php" class="active" aria-current="page">Ayuda</a>
+            <?php if (!empty($_SESSION['usuario_id'])): ?>
+                <a href="logout.php">Cerrar sesión</a>
+            <?php else: ?>
+                <a href="login.php">Iniciar sesión</a>
+            <?php endif; ?>
+        </div>
+    </nav>
+
+    <main>
+
+        <!-- ── Hero ──────────────────────────────────── -->
+        <div class="hero" role="banner">
+            <h1>❓ Centro de Ayuda</h1>
+            <p>Encuentra respuestas a las preguntas más frecuentes, guía de instalación y glosario técnico.</p>
+        </div>
+
+        <!-- ── FAQ ───────────────────────────────────── -->
+        <section class="card" aria-labelledby="faq-titulo">
+            <h2 id="faq-titulo">💬 Preguntas frecuentes</h2>
+
+            <?php
+            $faqs = [
+                [
+                    '¿Qué es AnalizadorFirmas?',
+                    'AnalizadorFirmas es una herramienta web que detecta el tipo real de un archivo
+                 analizando su <strong>firma binaria</strong> (magic bytes), independientemente
+                 de su extensión. Por ejemplo, un archivo <code>.txt</code> renombrado que en
+                 realidad es un PDF será correctamente identificado como <em>PDF</em>.'
+                ],
+                [
+                    '¿Qué tipos de archivo puede detectar?',
+                    'Actualmente detecta: <strong>JPEG, PNG, GIF, BMP, PDF, ZIP, MP3, MP4, EXE y ELF</strong>
+                 (binarios de Linux). La detección se realiza mediante la librería nativa
+                 <code>motor_firmas.dll</code> / <code>motor_firmas.exe</code>.'
+                ],
+                [
+                    '¿Cuál es el tamaño máximo de archivo permitido?',
+                    'El límite actual es de <strong>5 MB</strong> por archivo. Si necesitas analizar
+                 archivos más grandes, contacta al administrador del sistema.'
+                ],
+                [
+                    '¿Mis archivos se almacenan de forma permanente?',
+                    'Los archivos se guardan en el servidor solo para realizar el análisis. Puedes
+                 eliminarlos en cualquier momento desde el historial usando el botón 🗑️.
+                 Los archivos eliminados se borran tanto del disco como de la base de datos.'
+                ],
+                [
+                    '¿Qué es el "resultado desde caché"?',
+                    'Si subes un archivo idéntico (mismo contenido, mismo hash MD5) a uno ya
+                 analizado anteriormente, el sistema devuelve el resultado guardado sin volver
+                 a procesarlo. Esto se indica con el icono ⚡ en el resultado.'
+                ],
+                [
+                    '¿Cómo funciona el historial y los filtros?',
+                    'El historial muestra todos los archivos analizados. Puedes filtrar por
+                 <strong>nombre</strong> (búsqueda parcial), <strong>tipo</strong> (JPEG, PDF, etc.)
+                 y <strong>fecha</strong>. Los resultados se paginan de 10 en 10.'
+                ],
+                [
+                    '¿Necesito una cuenta para usar la aplicación?',
+                    'No es obligatorio. Puedes analizar archivos sin iniciar sesión. Sin embargo,
+                 con una cuenta los análisis quedan asociados a tu usuario en el historial.'
+                ],
+                [
+                    '¿Cómo restablezco mi contraseña?',
+                    'Actualmente no hay opción de recuperación automática. Contacta al administrador
+                 para que restablezca tu contraseña manualmente en la base de datos.'
+                ],
+            ];
+            foreach ($faqs as $i => [$pregunta, $respuesta]):
+            ?>
+                <div class="faq-item">
+                    <button class="faq-btn"
+                        id="faq-btn-<?= $i ?>"
+                        aria-expanded="false"
+                        aria-controls="faq-body-<?= $i ?>"
+                        onclick="toggleFaq(this)">
+                        <span><?= htmlspecialchars($pregunta) ?></span>
+                        <i class="arrow" aria-hidden="true">▶</i>
+                    </button>
+                    <div class="faq-body"
+                        id="faq-body-<?= $i ?>"
+                        role="region"
+                        aria-labelledby="faq-btn-<?= $i ?>">
+                        <p><?= $respuesta ?></p>
+                    </div>
+                </div>
+            <?php endforeach; ?>
+        </section>
+
+        <!-- ── Guía de instalación ────────────────────── -->
+        <section class="card" aria-labelledby="install-titulo">
+            <h2 id="install-titulo">⚙️ Guía de instalación</h2>
+            <ol class="steps" aria-label="Pasos de instalación">
+                <li>
+                    <span>Instala <strong>WampServer 3.x (64 bits)</strong> desde
+                        <a href="https://www.wampserver.com" target="_blank" rel="noopener">wampserver.com</a>
+                        y asegúrate de que el servidor Apache + PHP estén activos (icono verde en la barra del sistema).</span>
+                </li>
+                <li>
+                    <span>Copia la carpeta <code>AnalizadorFirmas/</code> dentro de
+                        <code>C:\wamp64\www\</code>. Verifica que la ruta quede como
+                        <code>C:\wamp64\www\AnalizadorFirmas\public\index.php</code>.</span>
+                </li>
+                <li>
+                    <span>Importa el esquema de base de datos: abre
+                        <a href="http://localhost/phpmyadmin" target="_blank" rel="noopener">phpMyAdmin</a>,
+                        crea una base de datos llamada <code>analizador_firmas</code> y ejecuta el
+                        archivo <code>db/schema.sql</code>.</span>
+                </li>
+                <li>
+                    <span>Edita <code>src/Database/Conexion.php</code> y actualiza las credenciales
+                        de MySQL (<code>host</code>, <code>dbname</code>, <code>user</code>,
+                        <code>password</code>) según tu entorno local.</span>
+                </li>
+                <li>
+                    <span>Habilita la extensión FFI en PHP: abre <code>php.ini</code> de WampServer
+                        (menú Wamp → PHP → php.ini), busca <code>ffi.enable</code> y cambia su valor a
+                        <code>ffi.enable=true</code>. Reinicia el servidor.</span>
+                </li>
+                <li>
+                    <span>Verifica que <code>motor_firmas.dll</code> (o <code>motor_firmas.exe</code>)
+                        está en la raíz del proyecto. El sistema intentará usar la DLL primero; si hay
+                        incompatibilidad de arquitectura (x86 vs x64), cambiará automáticamente al modo EXE.</span>
+                </li>
+                <li>
+                    <span>Abre el navegador y visita
+                        <a href="http://localhost/AnalizadorFirmas/public/" target="_blank" rel="noopener">
+                            http://localhost/AnalizadorFirmas/public/</a>.
+                        Si ves la interfaz de análisis, la instalación fue exitosa. ✅</span>
+                </li>
+            </ol>
+        </section>
+
+        <!-- ── Tipos de archivo soportados ───────────────── -->
+        <section class="card" aria-labelledby="tipos-titulo">
+            <h2 id="tipos-titulo">📁 Tipos de archivo soportados</h2>
+            <div style="overflow-x:auto" role="region" aria-label="Tabla de tipos de archivo soportados" tabindex="0">
+                <table class="tipos-tabla" aria-label="Formatos detectados por el analizador">
+                    <thead>
+                        <tr>
+                            <th scope="col">Tipo</th>
+                            <th scope="col">Descripción</th>
+                            <th scope="col">Magic bytes</th>
+                            <th scope="col">Código</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><span class="badge" style="background:#fff3e0;color:#e65100">🖼️ JPEG</span></td>
+                            <td>Imagen fotográfica comprimida</td>
+                            <td><code>FF D8 FF</code></td>
+                            <td>1</td>
+                        </tr>
+                        <tr>
+                            <td><span class="badge" style="background:#e3f2fd;color:#0d47a1">🖼️ PNG</span></td>
+                            <td>Imagen con transparencia</td>
+                            <td><code>89 50 4E 47</code></td>
+                            <td>2</td>
+                        </tr>
+                        <tr>
+                            <td><span class="badge" style="background:#ffebee;color:#b71c1c">📄 PDF</span></td>
+                            <td>Documento portátil</td>
+                            <td><code>25 50 44 46</code></td>
+                            <td>3</td>
+                        </tr>
+                        <tr>
+                            <td><span class="badge" style="background:#fff8e1;color:#f57f17">🗜️ ZIP</span></td>
+                            <td>Archivo comprimido</td>
+                            <td><code>50 4B 03 04</code></td>
+                            <td>4</td>
+                        </tr>
+                        <tr>
+                            <td><span class="badge" style="background:#f3e5f5;color:#4a148c">🎞️ GIF</span></td>
+                            <td>Imagen animada</td>
+                            <td><code>47 49 46 38</code></td>
+                            <td>5</td>
+                        </tr>
+                        <tr>
+                            <td><span class="badge" style="background:#fce4ec;color:#880e4f">🖼️ BMP</span></td>
+                            <td>Imagen de mapa de bits</td>
+                            <td><code>42 4D</code></td>
+                            <td>6</td>
+                        </tr>
+                        <tr>
+                            <td><span class="badge" style="background:#efebe9;color:#3e2723">⚙️ EXE</span></td>
+                            <td>Ejecutable Windows (PE)</td>
+                            <td><code>4D 5A</code></td>
+                            <td>7</td>
+                        </tr>
+                        <tr>
+                            <td><span class="badge" style="background:#eceff1;color:#263238">🐧 ELF</span></td>
+                            <td>Ejecutable Linux</td>
+                            <td><code>7F 45 4C 46</code></td>
+                            <td>8</td>
+                        </tr>
+                        <tr>
+                            <td><span class="badge" style="background:#e8f5e9;color:#1b5e20">🎵 MP3</span></td>
+                            <td>Audio MPEG</td>
+                            <td><code>FF FB / ID3</code></td>
+                            <td>9</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- ── Glosario ───────────────────────────────────── -->
+        <section class="card" aria-labelledby="glosario-titulo">
+            <h2 id="glosario-titulo">📖 Glosario técnico</h2>
+            <dl class="glosario">
+                <dt>Firma de archivo (magic bytes)</dt>
+                <dd>Secuencia de bytes al inicio de un archivo que identifica su formato real,
+                    independientemente de la extensión. Por ejemplo, todo JPEG comienza con
+                    <code>FF D8 FF</code>.
+                </dd>
+
+                <dt>Hash MD5</dt>
+                <dd>Huella digital de 128 bits de un archivo. Dos archivos idénticos producen
+                    el mismo MD5. El sistema lo usa para caché: si el MD5 ya existe en la BD,
+                    devuelve el resultado guardado sin reprocesar.</dd>
+
+                <dt>FFI (Foreign Function Interface)</dt>
+                <dd>Mecanismo de PHP para llamar directamente funciones de librerías nativas
+                    (<code>.dll</code> / <code>.so</code>) sin necesidad de extensión compilada.</dd>
+
+                <dt>DLL (Dynamic Link Library)</dt>
+                <dd>Librería de código nativo en Windows que expone funciones reutilizables.
+                    <code>motor_firmas.dll</code> contiene la lógica de detección de firmas.
+                </dd>
+
+                <dt>Modo EXE (fallback)</dt>
+                <dd>Si la DLL no es compatible con la arquitectura de PHP (ej. DLL x86 en PHP x64),
+                    el sistema ejecuta <code>motor_firmas.exe</code> mediante <code>shell_exec()</code>
+                    como alternativa automática.</dd>
+
+                <dt>Singleton</dt>
+                <dd>Patrón de diseño que garantiza una única instancia de una clase. La conexión a
+                    la BD (<code>Conexion</code>) y el motor (<code>MotorFirmas</code>) usan este
+                    patrón para evitar múltiples conexiones o cargas de DLL.</dd>
+
+                <dt>Paginación</dt>
+                <dd>División del historial en páginas de 10 registros para facilitar la navegación
+                    sin sobrecargar la interfaz.</dd>
+            </dl>
+        </section>
+
+        <!-- ── Contacto / volver ─────────────────────────── -->
+        <section class="card" aria-labelledby="contacto-titulo" style="text-align:center">
+            <h2 id="contacto-titulo">📬 ¿Necesitas más ayuda?</h2>
+            <p style="color:#666;margin-bottom:20px">
+                Si tu problema no está cubierto aquí, contacta al equipo de desarrollo:<br>
+                <strong>Proyecto LEMA — ASEM-I01</strong> · Ciclo 1-2026
+            </p>
+            <a href="index.php" class="btn-volver" aria-label="Volver a la página principal">← Volver al inicio</a>
+        </section>
+
+    </main>
+
+    <script>
+        function toggleFaq(btn) {
+            const expanded = btn.getAttribute('aria-expanded') === 'true';
+            // Cerrar todos
+            document.querySelectorAll('.faq-btn').forEach(b => {
+                b.setAttribute('aria-expanded', 'false');
+                document.getElementById(b.getAttribute('aria-controls')).classList.remove('open');
+            });
+            // Abrir el clickeado (si estaba cerrado)
+            if (!expanded) {
+                btn.setAttribute('aria-expanded', 'true');
+                document.getElementById(btn.getAttribute('aria-controls')).classList.add('open');
+            }
+        }
+    </script>
+</body>
+
+</html>

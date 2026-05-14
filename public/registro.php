@@ -56,20 +56,42 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <h1>Crear cuenta</h1>
 
         <?php if ($error): ?>
-        <div class="error">❌ <?= htmlspecialchars($error) ?></div>
+            <div class="error">❌ <?= htmlspecialchars($error) ?></div>
         <?php endif; ?>
         <?php if ($exito): ?>
-        <div class="ok">✅ <?= ($exito) ?></div>
+            <div class="ok">✅ <?= ($exito) ?></div>
         <?php endif; ?>
-            <form method="POST">
-                <input type="email" name="correo" placeholder="Correo electrónico" required>
-                <input type="password" name="clave" placeholder="Contraseña (mín. 6 caracteres)" required>
-                <input type="password" name="repetir" placeholder="Repetir contraseña" required>
-                <button type="submit">Registrarse</button>
-            </form>
-            <div class="link">
-                ¿Ya tienes cuenta? <a class="link-iniciar-sesion" href="login.php">Inicia sesión</a>
-            </div>
+        <form method="POST" aria-label="Formulario de registro" novalidate>
+            <label for="reg-correo">Correo electrónico</label>
+            <input type="email" id="reg-correo" name="correo"
+                placeholder="tucorreo@ejemplo.com"
+                autocomplete="email"
+                aria-required="true"
+                required>
+
+            <label for="reg-clave">Contraseña <small>(mín. 6 caracteres)</small></label>
+            <input type="password" id="reg-clave" name="clave"
+                placeholder="Mínimo 6 caracteres"
+                autocomplete="new-password"
+                minlength="6"
+                aria-required="true"
+                aria-describedby="hint-clave"
+                required>
+            <small id="hint-clave" style="color:#9CA3AF;display:block;margin-bottom:6px">Al menos 6 caracteres.</small>
+
+            <label for="reg-repetir">Repetir contraseña</label>
+            <input type="password" id="reg-repetir" name="repetir"
+                placeholder="Repite tu contraseña"
+                autocomplete="new-password"
+                minlength="6"
+                aria-required="true"
+                required>
+
+            <button type="submit" aria-label="Crear cuenta">Registrarse</button>
+        </form>
+        <div class="link">
+            ¿Ya tienes cuenta? <a class="link-iniciar-sesion" href="login.php">Inicia sesión</a>
+        </div>
     </div>
 </body>
 
