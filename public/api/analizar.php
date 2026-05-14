@@ -34,14 +34,13 @@ if (!isset($_FILES['archivo']) || $_FILES['archivo']['error'] !== UPLOAD_ERR_OK)
     exit;
 }
 
-// Cargar dependencias (Conexion.php la carga ArchivoRepository internamente)
+require_once __DIR__ . '/../../src/Database/Conexion.php';
 require_once __DIR__ . '/../../src/Service/MotorFirmas.php';
 require_once __DIR__ . '/../../src/Storage/StorageManager.php';
 require_once __DIR__ . '/../../src/Repository/ArchivoRepository.php';
 
 try {
-    // ArchivoRepository resuelve la conexión internamente (Singleton)
-    $repo = new ArchivoRepository();
+    $repo = new ArchivoRepository(Conexion::getInstance());
 
     // 1. Calcular hash MD5 del archivo temporal ANTES de moverlo
     $rutaTmp = $_FILES['archivo']['tmp_name'];
@@ -83,8 +82,10 @@ try {
         'nombre_original' => $_FILES['archivo']['name'],
         'tipo_detectado'  => $tipoNombre,
         'hash_md5'        => $hash,
+        'fecha_subida'    => date('Y-m-d H:i:s'),
+        'usuario_id'      => $_SESSION['usuario_id'] ?? null,
         'tamaño'          => $_FILES['archivo']['size'],
-        'usuario_id'      => null
+        'ruta'      =>  $rutaArchivo
     ]);
 
     // 6. Registrar en auditoría
