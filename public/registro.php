@@ -49,6 +49,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Registro — AnalizadorFirmas</title>
     <link rel="stylesheet" href="assets/css/theme.css">
+    <script src="assets/js/theme-switcher.js"></script>
 </head>
 
 <body>

@@ -44,16 +44,55 @@ function getTipoConfig($tipo, $tipoConfig) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AnalizadorFirmas</title>
     <link rel="stylesheet" href="assets/css/theme.css">
+    <script src="assets/js/theme-switcher.js"></script>
     <style>
     /* Estilos específicos de index.php que extienden theme.css */
 
-    /* Sobreescribir el tema oscuro de theme.css: index usa modo claro */
+    /* Variables CSS para modo claro (default) */
     :root {
+        /* Colores principales */
         --color-bg: #f0f2f5;
         --color-card: #ffffff;
-        --color-text: #333333;
+        --color-text: #000000;
         --color-text-soft: #666666;
         --color-border: #e0e0e0;
+        
+        /* Colores de interfaz */
+        --color-primary: #1976d2;
+        --color-primary-dark: #1565c0;
+        --color-success: #388e3c;
+        --color-danger: #f44336;
+        --color-danger-light: #ffebee;
+        --color-danger-border: #ef9a9a;
+        --color-danger-text: #c62828;
+        
+        /* Colores de drag & drop */
+        --color-drop-bg: #f8faff;
+        --color-drop-border: #90caf9;
+        --color-drop-dragover-bg: #e3f2fd;
+        --color-drop-dragover-border: #1976d2;
+        
+        /* Colores de progreso */
+        --color-progress-bg: #e0e0e0;
+        --color-progress-fill: #1976d2;
+        
+        /* Colores de tabla */
+        --color-table-header-bg: #1565c0;
+        --color-table-header-text: white;
+        --color-table-hover-bg: #f5f7ff;
+        --color-table-row-border: #f0f0f0;
+        
+        /* Colores de navegación */
+        --color-nav-bg: #1565c0;
+        --color-nav-text: rgba(255, 255, 255, 0.85);
+        --color-nav-hover: rgba(255, 255, 255, 0.15);
+        --color-nav-active: rgba(255, 255, 255, 0.25);
+        --color-nav-user: rgba(255, 255, 255, 0.6);
+        
+        /* Colores auxiliares */
+        --color-disabled: #9e9e9e;
+        --color-icon-placeholder: #555;
+        --color-file-name: #777;
     }
 
     /* ── Reset y base ───────────────────────────── */
@@ -67,14 +106,14 @@ function getTipoConfig($tipo, $tipoConfig) {
 
     body {
         font-family: 'Segoe UI', Arial, sans-serif;
-        background: #f0f2f5;
-        color: #333;
+        background: var(--color-bg);
+        color: var(--color-text);
         min-height: 100vh;
     }
 
     /* ── Navbar ─────────────────────────────────── */
     nav {
-        background: #1565c0;
+        background: var(--color-nav-bg);
         color: white;
         display: flex;
         align-items: center;
@@ -101,7 +140,7 @@ function getTipoConfig($tipo, $tipoConfig) {
     }
 
     nav .nav-links a {
-        color: rgba(255, 255, 255, .85);
+        color: var(--color-nav-text);
         text-decoration: none;
         font-size: .9rem;
         padding: 6px 12px;
@@ -111,13 +150,39 @@ function getTipoConfig($tipo, $tipoConfig) {
 
     nav .nav-links a:hover,
     nav .nav-links a:focus {
-        background: rgba(255, 255, 255, .15);
+        background: var(--color-nav-hover);
         color: white;
     }
 
     nav .nav-links a.active {
-        background: rgba(255, 255, 255, .25);
+        background: var(--color-nav-active);
         color: white;
+    }
+
+    .nav-user-info {
+        color: var(--color-nav-user);
+        font-size: .85rem;
+        padding: 6px 4px;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .theme-toggle {
+        background: rgba(255, 255, 255, 0.12);
+        color: white;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        border-radius: 6px;
+        padding: 6px 12px;
+        font-size: .9rem;
+        cursor: pointer;
+        transition: background .2s, border-color .2s;
+    }
+
+    .theme-toggle:hover,
+    .theme-toggle:focus {
+        background: rgba(255, 255, 255, 0.2);
+        outline: none;
     }
 
     .hamburger {
@@ -140,7 +205,7 @@ function getTipoConfig($tipo, $tipoConfig) {
 
     /* ── Cards ──────────────────────────────────── */
     .card {
-        background: white;
+        background: var(--color-card);
         border-radius: 10px;
         box-shadow: 0 2px 8px rgba(0, 0, 0, .08);
         padding: 28px;
@@ -148,7 +213,7 @@ function getTipoConfig($tipo, $tipoConfig) {
 
     .card h2 {
         font-size: 1.1rem;
-        color: #1565c0;
+        color: var(--color-primary);
         margin-bottom: 20px;
         display: flex;
         align-items: center;
@@ -157,18 +222,35 @@ function getTipoConfig($tipo, $tipoConfig) {
 
     /* ── Drag & Drop ────────────────────────────── */
     #drop-area {
-        border: 2px dashed #90caf9;
+        border: 2px dashed var(--color-drop-border);
         border-radius: 10px;
         padding: 40px 20px;
         text-align: center;
-        background: #f8faff;
+        background: var(--color-drop-bg);
         cursor: pointer;
         transition: background .2s, border-color .2s;
     }
 
     #drop-area.dragover {
-        background: #e3f2fd;
-        border-color: #1976d2;
+        background: var(--color-drop-dragover-bg);
+        border-color: var(--color-drop-dragover-border);
+    }
+
+    /* Modo oscuro: drag area y resultado azul translúcido */
+    .dark-mode #drop-area,
+    .dark-mode #drop-area.dragover {
+        background: rgba(59, 130, 246, 0.18);
+        border-color: rgba(59, 130, 246, 0.6);
+    }
+
+    .dark-mode #drop-area p,
+    .dark-mode #drop-area label,
+    .dark-mode #file-name {
+        color: white;
+    }
+
+    .dark-mode #drop-area label {
+        background: rgba(59, 130, 246, 0.85);
     }
 
     #drop-area .drop-icon {
@@ -178,13 +260,13 @@ function getTipoConfig($tipo, $tipoConfig) {
     }
 
     #drop-area p {
-        color: #555;
+        color: var(--color-icon-placeholder);
         margin-bottom: 12px;
     }
 
     #drop-area label {
         display: inline-block;
-        background: #1976d2;
+        background: var(--color-primary);
         color: white;
         padding: 8px 20px;
         border-radius: 4px;
@@ -194,7 +276,7 @@ function getTipoConfig($tipo, $tipoConfig) {
     }
 
     #drop-area label:hover {
-        background: #1565c0;
+        background: var(--color-primary-dark);
     }
 
     #file-input {
@@ -204,7 +286,7 @@ function getTipoConfig($tipo, $tipoConfig) {
     #file-name {
         margin-top: 10px;
         font-size: .85rem;
-        color: #777;
+        color: var(--color-file-name);
     }
 
     /* ── Barra de progreso ──────────────────────── */
@@ -214,7 +296,7 @@ function getTipoConfig($tipo, $tipoConfig) {
     }
 
     #progress-bar-wrap {
-        background: #e0e0e0;
+        background: var(--color-progress-bg);
         border-radius: 6px;
         height: 10px;
         overflow: hidden;
@@ -223,7 +305,7 @@ function getTipoConfig($tipo, $tipoConfig) {
     #progress-bar {
         height: 100%;
         width: 0;
-        background: #1976d2;
+        background: var(--color-progress-fill);
         border-radius: 6px;
         transition: width .3s;
     }
@@ -231,7 +313,7 @@ function getTipoConfig($tipo, $tipoConfig) {
     #progress-label {
         text-align: center;
         font-size: .8rem;
-        color: #555;
+        color: var(--color-icon-placeholder);
         margin-top: 4px;
     }
 
@@ -241,17 +323,17 @@ function getTipoConfig($tipo, $tipoConfig) {
         width: 100%;
         margin-top: 16px;
         padding: 12px;
-        background: #1976d2;
+        background: var(--color-success);
         color: white;
         border: none;
         border-radius: 6px;
         font-size: 1rem;
         cursor: pointer;
-        transition: background .2s, opacity .2s;
+        transition: opacity .2s;
     }
 
     #btn-analizar:hover:not(:disabled) {
-        background: #1565c0;
+        opacity: .85;
     }
 
     #btn-analizar:disabled {
@@ -274,6 +356,21 @@ function getTipoConfig($tipo, $tipoConfig) {
     #resultado-card h3 {
         margin-bottom: 12px;
         font-size: 1rem;
+    }
+
+    .dark-mode #resultado-card {
+        background: rgba(59, 130, 246, 0.15) !important;
+        border-color: rgba(59, 130, 246, 0.7) !important;
+        color: white !important;
+    }
+
+    .dark-mode #resultado-card h3,
+    .dark-mode #resultado-card td {
+        color: white !important;
+    }
+
+    .dark-mode #resultado-card td {
+        border-bottom-color: rgba(255,255,255,0.1);
     }
 
     #resultado-card table {
@@ -323,12 +420,12 @@ function getTipoConfig($tipo, $tipoConfig) {
     }
 
     .btn-otro {
-        background: #1976d2;
+        background: var(--color-success);
         color: white;
     }
 
     .btn-eliminar {
-        background: #f44336;
+        background: var(--color-danger);
         color: white;
     }
 
@@ -339,7 +436,7 @@ function getTipoConfig($tipo, $tipoConfig) {
         max-height: 220px;
         border-radius: 8px;
         margin-top: 12px;
-        border: 1px solid #e0e0e0;
+        border: 1px solid var(--color-border);
     }
 
     /* ── Toast ──────────────────────────────────── */
@@ -364,11 +461,11 @@ function getTipoConfig($tipo, $tipoConfig) {
     }
 
     #toast.success {
-        background: #388e3c;
+        background: var(--color-success);
     }
 
     #toast.error {
-        background: #c62828;
+        background: var(--color-danger);
     }
 
     /* ── Historial ──────────────────────────────── */
@@ -382,7 +479,7 @@ function getTipoConfig($tipo, $tipoConfig) {
 
     .filtros label {
         font-size: .8rem;
-        color: #555;
+        color: var(--color-text-soft);
         display: block;
         margin-bottom: 3px;
     }
@@ -390,7 +487,7 @@ function getTipoConfig($tipo, $tipoConfig) {
     .filtros input,
     .filtros select {
         padding: 7px 10px;
-        border: 1px solid #ccc;
+        border: 1px solid var(--color-border);
         border-radius: 5px;
         font-size: .85rem;
         min-width: 130px;
@@ -398,13 +495,13 @@ function getTipoConfig($tipo, $tipoConfig) {
 
     .filtros input:focus,
     .filtros select:focus {
-        outline: 2px solid #1976d2;
+        outline: 2px solid var(--color-primary);
         border-color: transparent;
     }
 
     .btn-filtrar {
         padding: 8px 16px;
-        background: #1976d2;
+        background: var(--color-primary);
         color: white;
         border: none;
         border-radius: 5px;
@@ -415,13 +512,17 @@ function getTipoConfig($tipo, $tipoConfig) {
 
     .btn-limpiar {
         padding: 8px 16px;
-        background: #e0e0e0;
-        color: #333;
+        background: var(--color-border);
+        color: var(--color-text);
         border: none;
         border-radius: 5px;
         cursor: pointer;
         font-size: .85rem;
         align-self: flex-end;
+    }
+
+    .table-wrapper {
+        overflow-x: auto;
     }
 
     #tabla-historial {
@@ -431,8 +532,8 @@ function getTipoConfig($tipo, $tipoConfig) {
     }
 
     #tabla-historial th {
-        background: #1565c0;
-        color: white;
+        background: var(--color-table-header-bg);
+        color: var(--color-table-header-text);
         padding: 10px 12px;
         text-align: left;
         font-weight: 600;
@@ -440,12 +541,12 @@ function getTipoConfig($tipo, $tipoConfig) {
 
     #tabla-historial td {
         padding: 9px 12px;
-        border-bottom: 1px solid #f0f0f0;
+        border-bottom: 1px solid var(--color-table-row-border);
         vertical-align: middle;
     }
 
     #tabla-historial tr:hover td {
-        background: #f5f7ff;
+        background: var(--color-table-hover-bg);
     }
 
     .icon-tipo {
@@ -466,17 +567,16 @@ function getTipoConfig($tipo, $tipoConfig) {
 
     .btn-del-fila {
         padding: 4px 10px;
-        background: #ffebee;
-        color: #c62828;
-        border: 1px solid #ef9a9a;
+        background: var(--color-danger);
+        color: white;
+        border: none;
         border-radius: 4px;
         cursor: pointer;
         font-size: .8rem;
-        transition: background .2s;
     }
 
     .btn-del-fila:hover {
-        background: #f44336;
+        background: var(--color-danger);
         color: white;
     }
 
@@ -491,7 +591,7 @@ function getTipoConfig($tipo, $tipoConfig) {
 
     .btn-pag {
         padding: 5px 11px;
-        border: 1px solid #ccc;
+        border: 1px solid var(--color-border);
         background: white;
         border-radius: 4px;
         cursor: pointer;
@@ -500,18 +600,18 @@ function getTipoConfig($tipo, $tipoConfig) {
     }
 
     .btn-pag.active {
-        background: #1976d2;
+        background: var(--color-primary);
         color: white;
-        border-color: #1976d2;
+        border-color: var(--color-primary);
     }
 
     .btn-pag:hover:not(.active) {
-        background: #e3f2fd;
+        background: var(--color-drop-dragover-bg);
     }
 
     #no-resultados {
         text-align: center;
-        color: #9e9e9e;
+        color: var(--color-disabled);
         padding: 30px;
         display: none;
     }
@@ -525,7 +625,7 @@ function getTipoConfig($tipo, $tipoConfig) {
             top: 56px;
             left: 0;
             right: 0;
-            background: #1565c0;
+            background: var(--color-nav-bg);
             padding: 12px 0;
         }
 
@@ -572,11 +672,12 @@ function getTipoConfig($tipo, $tipoConfig) {
         <div class="nav-links" id="nav-links">
             <a href="index.php" class="active" aria-current="page">Analizar</a>
             <a href="ayuda.php">Ayuda</a>
-            <span style="color:rgba(255,255,255,.6);font-size:.85rem;padding:6px 4px" aria-label="Usuario autenticado">
+            <span class="nav-user-info" aria-label="Usuario autenticado">
                 <img src="assets/img/icons/usuario.svg" class="icon-ui">
                 <?= htmlspecialchars($_SESSION['correo'] ?? '') ?>
             </span>
             <a href="logout.php">Cerrar sesión</a>
+            <button type="button" class="theme-toggle" onclick="toggleTheme()" aria-label="Cambiar modo claro/oscuro">Modo claro/oscuro 🌓</button>
         </div>
         <button class="hamburger" aria-label="Abrir menú" aria-expanded="false" aria-controls="nav-links"
             onclick="toggleMenu(this)">☰</button>
@@ -670,7 +771,7 @@ function getTipoConfig($tipo, $tipoConfig) {
             </div>
 
             <!-- Tabla -->
-            <div role="region" aria-label="Tabla de archivos analizados" tabindex="0" style="overflow-x:auto">
+            <div class="table-wrapper" role="region" aria-label="Tabla de archivos analizados" tabindex="0">
                 <table id="tabla-historial" aria-label="Historial de archivos analizados">
                     <thead>
                         <tr>

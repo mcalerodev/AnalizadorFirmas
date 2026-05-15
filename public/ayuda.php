@@ -7,10 +7,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ayuda — AnalizadorFirmas</title>
     <link rel="stylesheet" href="assets/css/theme.css">
+    <script src="assets/js/theme-switcher.js"></script>
     <style>
         /* ── Navbar ─────────────────────────────── */
         nav {
-            background: #1565c0;
+            background: var(--color-primary);
             color: white;
             display: flex;
             align-items: center;
@@ -47,12 +48,29 @@
             color: white;
         }
 
+        .theme-toggle {
+            background: rgba(255, 255, 255, 0.12);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 6px;
+            padding: 6px 12px;
+            font-size: .9rem;
+            cursor: pointer;
+            transition: background .2s, border-color .2s;
+        }
+
+        .theme-toggle:hover,
+        .theme-toggle:focus {
+            background: rgba(255, 255, 255, 0.2);
+            outline: none;
+        }
+
         /* ── Layout ─────────────────────────────── */
         body {
-            background: #f0f2f5;
-            color: #333;
-            font-family: 'Segoe UI', Arial, sans-serif;
             margin: 0;
+            font-family: var(--font-main);
+            background: var(--color-bg);
+            color: var(--color-text);
         }
 
         main {
@@ -65,7 +83,7 @@
 
         /* ── Hero ───────────────────────────────── */
         .hero {
-            background: linear-gradient(135deg, #1565c0 0%, #1976d2 100%);
+            background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
             color: white;
             border-radius: 12px;
             padding: 36px 32px;
@@ -73,18 +91,28 @@
         }
 
         .hero h1 {
+            color: var(--color-hero-title, #000000);
             font-size: 1.8rem;
             margin-bottom: 8px;
         }
 
         .hero p {
+            color: var(--color-hero-paragraph, #000000);
             opacity: .85;
             font-size: 1rem;
         }
 
+        body.dark-mode .hero h1 {
+            color: #ffffff;
+        }
+
+        body.dark-mode .hero p {
+            color: #ffffff;
+        }
+
         /* ── Cards ──────────────────────────────── */
         .card {
-            background: white;
+            background: var(--color-card);
             border-radius: 10px;
             box-shadow: 0 2px 8px rgba(0, 0, 0, .07);
             padding: 28px;
@@ -92,18 +120,18 @@
 
         .card h2 {
             font-size: 1.05rem;
-            color: #1565c0;
+            color: var(--color-primary);
             margin-bottom: 18px;
             display: flex;
             align-items: center;
             gap: 8px;
-            border-bottom: 2px solid #e3f2fd;
+            border-bottom: 2px solid rgba(227, 242, 253, .7);
             padding-bottom: 10px;
         }
 
         /* ── FAQ accordion ───────────────────────── */
         .faq-item {
-            border-bottom: 1px solid #f0f0f0;
+            border-bottom: 1px solid var(--color-border);
         }
 
         .faq-item:last-child {
@@ -118,7 +146,7 @@
             padding: 14px 4px;
             font-size: .95rem;
             font-weight: 600;
-            color: #1976d2;
+            color: var(--color-primary);
             cursor: pointer;
             display: flex;
             justify-content: space-between;
@@ -128,7 +156,7 @@
         }
 
         .faq-btn:hover {
-            color: #1565c0;
+            color: var(--color-primary-dark);
         }
 
         .faq-btn .arrow {
@@ -144,7 +172,7 @@
         .faq-body {
             display: none;
             padding: 0 4px 14px;
-            color: #555;
+            color: var(--color-text-soft);
             font-size: .9rem;
             line-height: 1.7;
         }
@@ -167,13 +195,13 @@
             align-items: flex-start;
             margin-bottom: 14px;
             font-size: .9rem;
-            color: #444;
+            color: var(--color-text);
             line-height: 1.6;
         }
 
         .steps li::before {
             content: counter(step);
-            background: #1976d2;
+            background: var(--color-primary);
             color: white;
             border-radius: 50%;
             width: 26px;
@@ -187,8 +215,8 @@
         }
 
         code {
-            background: #f0f4ff;
-            border: 1px solid #c5d3f7;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.12);
             border-radius: 4px;
             padding: 2px 6px;
             font-size: .85rem;
@@ -203,8 +231,8 @@
         }
 
         .tipos-tabla th {
-            background: #1565c0;
-            color: white;
+            background: var(--color-table-header-bg);
+            color: var(--color-table-header-text);
             padding: 9px 12px;
             text-align: left;
         }
@@ -215,7 +243,7 @@
         }
 
         .tipos-tabla tr:hover td {
-            background: #f5f7ff;
+            background: var(--color-table-hover-bg);
         }
 
         .badge {
@@ -244,7 +272,7 @@
         .btn-volver {
             display: inline-block;
             padding: 9px 20px;
-            background: #1976d2;
+            background: var(--color-primary);
             color: white;
             border-radius: 6px;
             text-decoration: none;
@@ -253,7 +281,20 @@
         }
 
         .btn-volver:hover {
-            background: #1565c0;
+            background: var(--color-primary-dark);
+        }
+
+        .table-wrapper {
+            overflow-x: auto;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        .help-note {
+            color: var(--color-text-soft);
+            margin-bottom: 20px;
         }
 
         /* ── Responsive ──────────────────────────── */
@@ -291,6 +332,7 @@
             <?php else: ?>
                 <a href="login.php">Iniciar sesión</a>
             <?php endif; ?>
+            <button type="button" class="theme-toggle" onclick="toggleTheme()" aria-label="Cambiar modo claro/oscuro">🌓</button>
         </div>
     </nav>
 
@@ -423,7 +465,7 @@
         <!-- ── Tipos de archivo soportados ───────────────── -->
         <section class="card" aria-labelledby="tipos-titulo">
             <h2 id="tipos-titulo">📁 Tipos de archivo soportados</h2>
-            <div style="overflow-x:auto" role="region" aria-label="Tabla de tipos de archivo soportados" tabindex="0">
+            <div class="table-wrapper" role="region" aria-label="Tabla de tipos de archivo soportados" tabindex="0">
                 <table class="tipos-tabla" aria-label="Formatos detectados por el analizador">
                     <thead>
                         <tr>
@@ -534,9 +576,9 @@
         </section>
 
         <!-- ── Contacto / volver ─────────────────────────── -->
-        <section class="card" aria-labelledby="contacto-titulo" style="text-align:center">
+        <section class="card text-center" aria-labelledby="contacto-titulo">
             <h2 id="contacto-titulo">📬 ¿Necesitas más ayuda?</h2>
-            <p style="color:#666;margin-bottom:20px">
+            <p class="help-note">
                 Si tu problema no está cubierto aquí, contacta al equipo de desarrollo:<br>
                 <strong>Proyecto LEMA — ASEM-I01</strong> · Ciclo 1-2026
             </p>
