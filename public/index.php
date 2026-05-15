@@ -16,18 +16,18 @@ require_once __DIR__ . '/../src/Repository/ArchivoRepository.php';
 $repo     = new ArchivoRepository(Conexion::getInstance());
 $archivos = $repo->obtenerTodos();
 
-// Colores y emojis por tipo de archivo
+// Colores e iconos por tipo de archivo
 $tipoConfig = [
-    'JPEG' => ['color' => '#fff3e0', 'border' => '#ff9800', 'icon' => '🖼️'],
-    'PNG'  => ['color' => '#e3f2fd', 'border' => '#2196f3', 'icon' => '🖼️'],
-    'GIF'  => ['color' => '#f3e5f5', 'border' => '#9c27b0', 'icon' => '🎞️'],
-    'BMP'  => ['color' => '#fce4ec', 'border' => '#e91e63', 'icon' => '🖼️'],
-    'PDF'  => ['color' => '#ffebee', 'border' => '#f44336', 'icon' => '📄'],
-    'ZIP'  => ['color' => '#fff8e1', 'border' => '#ffc107', 'icon' => '🗜️'],
-    'MP3'  => ['color' => '#e8f5e9', 'border' => '#4caf50', 'icon' => '🎵'],
-    'MP4'  => ['color' => '#e0f2f1', 'border' => '#009688', 'icon' => '🎬'],
-    'EXE'  => ['color' => '#efebe9', 'border' => '#795548', 'icon' => '⚙️'],
-    'ELF'  => ['color' => '#eceff1', 'border' => '#607d8b', 'icon' => '🐧'],
+    'JPEG' => ['color' => '#fff3e0', 'border' => '#ff9800', 'icon' => 'assets/img/icons/jpg.png'],
+    'PNG'  => ['color' => '#e3f2fd', 'border' => '#2196f3', 'icon' => 'assets/img/icons/png.png'],
+    'GIF'  => ['color' => '#f3e5f5', 'border' => '#9c27b0', 'icon' => 'assets/img/icons/gif.png'],
+    'BMP'  => ['color' => '#fce4ec', 'border' => '#e91e63', 'icon' => 'assets/img/icons/bmp.png'],
+    'PDF'  => ['color' => '#ffebee', 'border' => '#f44336', 'icon' => 'assets/img/icons/pdf.png'],
+    'ZIP'  => ['color' => '#fff8e1', 'border' => '#ffc107', 'icon' => 'assets/img/icons/zip.png'],
+    'MP3'  => ['color' => '#e8f5e9', 'border' => '#4caf50', 'icon' => 'assets/img/icons/mp3.png'],
+    'MP4'  => ['color' => '#e0f2f1', 'border' => '#009688', 'icon' => 'assets/img/icons/mp4.png'],
+    'EXE'  => ['color' => '#efebe9', 'border' => '#795548', 'icon' => 'assets/img/icons/exe.png'],
+    'ELF'  => ['color' => '#eceff1', 'border' => '#607d8b', 'icon' => 'assets/img/icons/elf.png'],
 ];
 
 function getTipoConfig($tipo, $tipoConfig) {
@@ -448,9 +448,20 @@ function getTipoConfig($tipo, $tipoConfig) {
         background: #f5f7ff;
     }
 
-    #tabla-historial .icon-tipo {
+    .icon-tipo {
         font-size: 1.2rem;
         margin-right: 4px;
+        width: 24px;
+        height: 24px;
+        object-fit: contain;
+        vertical-align: middle;
+        margin-right: 6px;
+    }
+
+    .icon-ui {
+        width: 22px;
+        height: 22px;
+        vertical-align: middle;
     }
 
     .btn-del-fila {
@@ -557,12 +568,13 @@ function getTipoConfig($tipo, $tipoConfig) {
 
     <!-- ── Navbar ─────────────────────────────────────────── -->
     <nav role="navigation" aria-label="Navegación principal">
-        <div class="brand">🔍 AnalizadorFirmas</div>
+        <div class="brand"><img src="assets/img/icons/lupa.svg" class="icon-ui">AnalizadorFirmas</div>
         <div class="nav-links" id="nav-links">
             <a href="index.php" class="active" aria-current="page">Analizar</a>
             <a href="ayuda.php">Ayuda</a>
             <span style="color:rgba(255,255,255,.6);font-size:.85rem;padding:6px 4px" aria-label="Usuario autenticado">
-                👤 <?= htmlspecialchars($_SESSION['correo'] ?? '') ?>
+                <img src="assets/img/icons/usuario.svg" class="icon-ui">
+                <?= htmlspecialchars($_SESSION['correo'] ?? '') ?>
             </span>
             <a href="logout.php">Cerrar sesión</a>
         </div>
@@ -577,7 +589,7 @@ function getTipoConfig($tipo, $tipoConfig) {
 
         <!-- ── Card: Subir archivo ────────────────────── -->
         <section class="card" aria-labelledby="titulo-subir">
-            <h2 id="titulo-subir">📤 Analizar archivo</h2>
+            <h2 id="titulo-subir"><img src="assets/img/icons/subir.svg" class="icon-ui">Analizar archivo</h2>
 
             <!-- Drag & drop -->
             <div id="drop-area" role="region" aria-label="Zona de carga de archivos" tabindex="0"
@@ -610,9 +622,15 @@ function getTipoConfig($tipo, $tipoConfig) {
                         <tbody id="resultado-body"></tbody>
                     </table>
                     <div class="acciones">
-                        <button class="btn-accion btn-otro" onclick="reiniciar()">🔄 Analizar otro</button>
+                        <button class="btn-accion btn-otro" onclick="reiniciar()">
+                            <img src="assets/img/icons/otro.svg" class="icon-ui">
+                            Analizar otro
+                        </button>
                         <button class="btn-accion btn-eliminar" id="btn-eliminar-resultado"
-                            onclick="eliminarDesdeResultado()">🗑️ Eliminar</button>
+                            onclick="eliminarDesdeResultado()">
+                            <img src="assets/img/icons/eliminar.svg" class="icon-ui">
+                            Eliminar
+                        </button>
                     </div>
                 </div>
             </div>
@@ -620,7 +638,8 @@ function getTipoConfig($tipo, $tipoConfig) {
 
         <!-- ── Card: Historial ────────────────────────── -->
         <section class="card" aria-labelledby="titulo-historial">
-            <h2 id="titulo-historial">📋 Historial de análisis</h2>
+            <h2 id="titulo-historial"><img src="assets/img/icons/historial.svg" class="icon-ui"
+                    alt="Historial">Historial de análisis</h2>
 
             <!-- Filtros -->
             <div class="filtros" role="search" aria-label="Filtros de historial">
@@ -671,7 +690,7 @@ function getTipoConfig($tipo, $tipoConfig) {
                             data-tipo="<?= htmlspecialchars($a['tipo_detectado']) ?>"
                             data-fecha="<?= substr($a['fecha_subida'], 0, 10) ?>">
                             <td>
-                                <span aria-hidden="true"><?= $cfg['icon'] ?></span>
+                                <img src="<?= $cfg['icon'] ?>" class="icon-tipo" alt="icono">
                                 <span class="tipo-badge"
                                     style="color:<?= $cfg['border'] ?>;border-color:<?= $cfg['border'] ?>;background:<?= $cfg['color'] ?>">
                                     <?= htmlspecialchars($a['tipo_detectado']) ?>
@@ -688,7 +707,7 @@ function getTipoConfig($tipo, $tipoConfig) {
                                 <button class="btn-del-fila"
                                     aria-label="Eliminar <?= htmlspecialchars($a['nombre_original']) ?>"
                                     onclick="eliminarArchivo(<?= $a['id'] ?>, this)">
-                                    🗑️
+                                    <img src="assets/img/icons/eliminar.svg" class="icon-ui">
                                 </button>
                             </td>
                         </tr>
@@ -834,7 +853,7 @@ function getTipoConfig($tipo, $tipoConfig) {
         <tr><td>Nombre</td><td>${escHTML(data.nombre_original)}</td></tr>
         <tr><td>Tipo detectado</td><td>
             <span class="tipo-badge" style="color:${cfg.border};border-color:${cfg.border};background:${cfg.color}">
-                ${cfg.icon || ''} ${escHTML(tipo)}
+                <img src="${cfg.icon}" class="icon-tipo"> ${escHTML(tipo)}
             </span>
         </td></tr>
         <tr><td>Tamaño</td><td>${(data.tamaño / 1024).toFixed(1)} KB</td></tr>
@@ -924,13 +943,15 @@ function getTipoConfig($tipo, $tipoConfig) {
         tr.dataset.fecha = fecha.slice(0, 10);
         tr.innerHTML = `
         <td>
-            <span aria-hidden="true">${cfg.icon || ''}</span>
+            <span aria-hidden="true">
+                <img src="${cfg.icon}" class="icon-tipo" alt="icono">
+            </span>
             <span class="tipo-badge" style="color:${cfg.border};border-color:${cfg.border};background:${cfg.color}">${tipo}</span>
         </td>
         <td title="${escHTML(data.nombre_original)}">${escHTML((data.nombre_original||'').substring(0,35))}</td>
         <td>${(data.tamaño / 1024).toFixed(1)} KB</td>
         <td>${fecha}</td>
-        <td><button class="btn-del-fila" aria-label="Eliminar ${escHTML(data.nombre_original)}" onclick="eliminarArchivo(${id}, this)">🗑️</button></td>
+        <td><button class="btn-del-fila" aria-label="Eliminar ${escHTML(data.nombre_original)}" onclick="eliminarArchivo(${id}, this)"><img src="assets/img/icons/eliminar.svg" class="icon-ui"></button></td>
     `;
         tbody.prepend(tr);
         filtrarHistorial();
@@ -968,7 +989,7 @@ function getTipoConfig($tipo, $tipoConfig) {
         if (total <= 1) return;
 
         const info = document.createElement('span');
-        info.style.cssText = 'font-size:.8rem;color:#777;align-self:center;margin-right:8px';
+        info.style.cssText = 'font-size:.8rem;color:#fff;align-self:center;margin-right:8px';
         info.textContent = totalFilas + ' registros';
         nav.appendChild(info);
 
