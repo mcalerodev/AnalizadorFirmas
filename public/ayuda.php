@@ -11,7 +11,7 @@
     <style>
         /* ── Navbar ─────────────────────────────── */
         nav {
-            background: var(--color-primary);
+            background: var(--color-nav-bg);
             color: white;
             display: flex;
             align-items: center;
@@ -27,6 +27,9 @@
         nav .brand {
             font-size: 1.2rem;
             font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
 
         nav .nav-links {
@@ -246,6 +249,24 @@
             background: var(--color-table-hover-bg);
         }
 
+        /* Icon styles shared with index.php */
+        .icon-ui {
+            width: 22px;
+            height: 22px;
+            vertical-align: middle;
+            display: inline-block;
+        }
+
+        .icon-tipo {
+            font-size: 1.2rem;
+            margin-right: 4px;
+            width: 24px;
+            height: 24px;
+            object-fit: contain;
+            vertical-align: middle;
+            margin-right: 6px;
+        }
+
         .badge {
             display: inline-block;
             padding: 2px 9px;
@@ -323,7 +344,7 @@
 
     <!-- ── Navbar ─────────────────────────────────────────── -->
     <nav role="navigation" aria-label="Navegación principal">
-        <div class="brand">🔍 AnalizadorFirmas</div>
+        <div class="brand"><img src="assets/img/icons/lupa.svg" class="icon-ui"> AnalizadorFirmas</div>
         <div class="nav-links">
             <a href="index.php">Analizar</a>
             <a href="ayuda.php" class="active" aria-current="page">Ayuda</a>
@@ -332,7 +353,7 @@
             <?php else: ?>
                 <a href="login.php">Iniciar sesión</a>
             <?php endif; ?>
-            <button type="button" class="theme-toggle" onclick="toggleTheme()" aria-label="Cambiar modo claro/oscuro">🌓</button>
+            <button type="button" class="theme-toggle" onclick="toggleTheme()" aria-label="Cambiar modo claro/oscuro">Modo claro/oscuro <img src="assets/img/icons/modo.svg" class="icon-ui"></button>
         </div>
     </nav>
 
@@ -346,7 +367,7 @@
 
         <!-- ── FAQ ───────────────────────────────────── -->
         <section class="card" aria-labelledby="faq-titulo">
-            <h2 id="faq-titulo">💬 Preguntas frecuentes</h2>
+            <h2 id="faq-titulo"><img src="assets/img/icons/preguntas.svg" class="icon-ui"> Preguntas frecuentes</h2>
 
             <?php
             $faqs = [
@@ -420,7 +441,7 @@
 
         <!-- ── Guía de instalación ────────────────────── -->
         <section class="card" aria-labelledby="install-titulo">
-            <h2 id="install-titulo">⚙️ Guía de instalación</h2>
+            <h2 id="install-titulo"><img src="assets/img/icons/config.svg" class="icon-ui"> Guía de instalación</h2>
             <ol class="steps" aria-label="Pasos de instalación">
                 <li>
                     <span>Instala <strong>WampServer 3.x (64 bits)</strong> desde
@@ -464,7 +485,7 @@
 
         <!-- ── Tipos de archivo soportados ───────────────── -->
         <section class="card" aria-labelledby="tipos-titulo">
-            <h2 id="tipos-titulo">📁 Tipos de archivo soportados</h2>
+            <h2 id="tipos-titulo"><img src="assets/img/icons/archivo.svg" class="icon-ui"> Tipos de archivo soportados</h2>
             <div class="table-wrapper" role="region" aria-label="Tabla de tipos de archivo soportados" tabindex="0">
                 <table class="tipos-tabla" aria-label="Formatos detectados por el analizador">
                     <thead>
@@ -477,55 +498,55 @@
                     </thead>
                     <tbody>
                         <tr>
-                            <td><span class="badge" style="background:#fff3e0;color:#e65100">🖼️ JPEG</span></td>
+                            <td><span class="badge badge-jpg"><img src="assets/img/icons/jpg.png" class="icon-ui"> JPEG</span></td>
                             <td>Imagen fotográfica comprimida</td>
                             <td><code>FF D8 FF</code></td>
                             <td>1</td>
                         </tr>
                         <tr>
-                            <td><span class="badge" style="background:#e3f2fd;color:#0d47a1">🖼️ PNG</span></td>
+                            <td><span class="badge badge-png"><img src="assets/img/icons/png.png" class="icon-ui"> PNG</span></td>
                             <td>Imagen con transparencia</td>
                             <td><code>89 50 4E 47</code></td>
                             <td>2</td>
                         </tr>
                         <tr>
-                            <td><span class="badge" style="background:#ffebee;color:#b71c1c">📄 PDF</span></td>
+                            <td><span class="badge badge-pdf"><img src="assets/img/icons/pdf.png" class="icon-ui"> PDF</span></td>
                             <td>Documento portátil</td>
                             <td><code>25 50 44 46</code></td>
                             <td>3</td>
                         </tr>
                         <tr>
-                            <td><span class="badge" style="background:#fff8e1;color:#f57f17">🗜️ ZIP</span></td>
+                            <td><span class="badge badge-zip"><img src="assets/img/icons/zip.png" class="icon-ui"> ZIP</span></td>
                             <td>Archivo comprimido</td>
                             <td><code>50 4B 03 04</code></td>
                             <td>4</td>
                         </tr>
                         <tr>
-                            <td><span class="badge" style="background:#f3e5f5;color:#4a148c">🎞️ GIF</span></td>
+                            <td><span class="badge badge-gif"><img src="assets/img/icons/gif.png" class="icon-ui"> GIF</span></td>
                             <td>Imagen animada</td>
                             <td><code>47 49 46 38</code></td>
                             <td>5</td>
                         </tr>
                         <tr>
-                            <td><span class="badge" style="background:#fce4ec;color:#880e4f">🖼️ BMP</span></td>
+                            <td><span class="badge badge-bmp"><img src="assets/img/icons/bmp.png" class="icon-ui"> BMP</span></td>
                             <td>Imagen de mapa de bits</td>
                             <td><code>42 4D</code></td>
                             <td>6</td>
                         </tr>
                         <tr>
-                            <td><span class="badge" style="background:#efebe9;color:#3e2723">⚙️ EXE</span></td>
+                            <td><span class="badge badge-exe"><img src="assets/img/icons/exe.png" class="icon-ui"> EXE</span></td>
                             <td>Ejecutable Windows (PE)</td>
                             <td><code>4D 5A</code></td>
                             <td>7</td>
                         </tr>
                         <tr>
-                            <td><span class="badge" style="background:#eceff1;color:#263238">🐧 ELF</span></td>
+                            <td><span class="badge badge-elf"><img src="assets/img/icons/elf.png" class="icon-ui"> ELF</span></td>
                             <td>Ejecutable Linux</td>
                             <td><code>7F 45 4C 46</code></td>
                             <td>8</td>
                         </tr>
                         <tr>
-                            <td><span class="badge" style="background:#e8f5e9;color:#1b5e20">🎵 MP3</span></td>
+                            <td><span class="badge badge-mp3"><img src="assets/img/icons/mp3.png" class="icon-ui"> MP3</span></td>
                             <td>Audio MPEG</td>
                             <td><code>FF FB / ID3</code></td>
                             <td>9</td>
@@ -537,7 +558,7 @@
 
         <!-- ── Glosario ───────────────────────────────────── -->
         <section class="card" aria-labelledby="glosario-titulo">
-            <h2 id="glosario-titulo">📖 Glosario técnico</h2>
+            <h2 id="glosario-titulo"><img src="assets/img/icons/glosario.svg" class="icon-ui"> Glosario técnico</h2>
             <dl class="glosario">
                 <dt>Firma de archivo (magic bytes)</dt>
                 <dd>Secuencia de bytes al inicio de un archivo que identifica su formato real,
@@ -577,7 +598,7 @@
 
         <!-- ── Contacto / volver ─────────────────────────── -->
         <section class="card text-center" aria-labelledby="contacto-titulo">
-            <h2 id="contacto-titulo">📬 ¿Necesitas más ayuda?</h2>
+            <h2 id="contacto-titulo"><img src="assets/img/icons/ayuda.svg" class="icon-ui"> ¿Necesitas más ayuda?</h2>
             <p class="help-note">
                 Si tu problema no está cubierto aquí, contacta al equipo de desarrollo:<br>
                 <strong>Proyecto LEMA — ASEM-I01</strong> · Ciclo 1-2026

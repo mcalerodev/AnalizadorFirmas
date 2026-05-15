@@ -677,7 +677,7 @@ function getTipoConfig($tipo, $tipoConfig) {
                 <?= htmlspecialchars($_SESSION['correo'] ?? '') ?>
             </span>
             <a href="logout.php">Cerrar sesión</a>
-            <button type="button" class="theme-toggle" onclick="toggleTheme()" aria-label="Cambiar modo claro/oscuro">Modo claro/oscuro 🌓</button>
+            <button type="button" class="theme-toggle" onclick="toggleTheme()" aria-label="Cambiar modo claro/oscuro">Modo claro/oscuro <img src="assets/img/icons/modo.svg" class="icon-ui"></button>
         </div>
         <button class="hamburger" aria-label="Abrir menú" aria-expanded="false" aria-controls="nav-links"
             onclick="toggleMenu(this)">☰</button>

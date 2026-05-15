@@ -4,6 +4,10 @@
   --color-bg: #f0f2f5;
   --color-card: #ffffff;
   --color-primary: #3B82F6;
+  --color-primary-dark: #2563EB;
+  --color-nav-bg: #1565c0;
+  --color-links-light: #60A5FA; /* azul más claro para enlaces destacados (dark-mode) */
+  --color-links-dark: #1e40af; /* azul oscuro para modo claro */
   --color-success: #22C55E;
   --color-danger: #DC2626;
   --color-text: #000000;
@@ -51,6 +55,12 @@ body.dark-mode {
 body.dark-mode .icon-ui,
 body.dark-mode .icon {
   filter: brightness(0) invert(1);
+}
+
+/* Glosario: dd y code deben ser blancos solo en modo oscuro */
+body.dark-mode .glosario dd,
+body.dark-mode .glosario code {
+  color: #ffffff;
 }
 
 /* ===== BASE ===== */
@@ -439,4 +449,52 @@ span {
     -webkit-overflow-scrolling: touch;
     /* Suavidad en móviles */
   }
+}
+
+/* ===== BADGES PARA TIPOS DE ARCHIVO (mover estilos inline de ayuda.php) ===== */
+.badge {
+  display: inline-block;
+  padding: 2px 9px;
+  border-radius: 10px;
+  font-size: .78rem;
+  font-weight: 700;
+  vertical-align: middle;
+}
+
+.badge img {
+  width: 18px;
+  height: 18px;
+  vertical-align: middle;
+  margin-right: 6px;
+  object-fit: contain;
+  filter: none; /* Mantener colores originales */
+}
+
+.badge-jpg { background:#fff3e0; color:#e65100 }
+.badge-png { background:#e3f2fd; color:#0d47a1 }
+.badge-pdf { background:#ffebee; color:#b71c1c }
+.badge-zip { background:#fff8e1; color:#f57f17 }
+.badge-gif { background:#f3e5f5; color:#4a148c }
+.badge-bmp { background:#fce4ec; color:#880e4f }
+.badge-exe { background:#efebe9; color:#3e2723 }
+.badge-elf { background:#eceff1; color:#263238 }
+.badge-mp3 { background:#e8f5e9; color:#1b5e20 }
+
+/* En modo oscuro, evitar invertir los iconos dentro de badges */
+body.dark-mode .badge img { filter: none !important }
+
+/* ===== ENLACES: Guía de instalación (azul más claro para distinguir) ===== */
+section[aria-labelledby="install-titulo"] a {
+  color: var(--color-links-dark);
+}
+
+section[aria-labelledby="install-titulo"] a:hover,
+section[aria-labelledby="install-titulo"] a:focus {
+  color: var(--color-primary-dark);
+  text-decoration: underline;
+}
+
+/* En modo oscuro usar el azul más claro para distinguir sobre fondo oscuro */
+body.dark-mode section[aria-labelledby="install-titulo"] a {
+  color: var(--color-links-light);
 }
