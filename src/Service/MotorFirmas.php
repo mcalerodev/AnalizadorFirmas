@@ -18,16 +18,29 @@ class MotorFirmas
     private $modoExe  = false;  // true cuando FFI no está disponible
 
     // Mapa de tipos usado en modo EXE (sin DLL)
+    // ⚠ Los códigos deben coincidir con los EQU definidos en engine/firmas.inc
     private static $tiposMap = [
-        1 => "JPEG",
-        2 => "PNG",
-        3 => "PDF",
-        4 => "ZIP",
-        5 => "GIF",
-        6 => "BMP",
-        7 => "EXE",
-        8 => "ELF",
-        9 => "MP3"
+        0  => "DESCONOCIDO",
+        1  => "JPEG",
+        2  => "PNG",
+        3  => "GIF",
+        4  => "BMP",
+        5  => "PDF",
+        6  => "ZIP",
+        7  => "DOCX/XLSX/PPTX",
+        8  => "EXE (PE)",
+        9  => "ELF",
+        10 => "MP3",
+        11 => "MP4",
+        12 => "RAR",
+        13 => "7Z",
+        14 => "WAV",
+        15 => "AVI",
+        16 => "WEBP",
+        17 => "ICO",
+        18 => "TAR",
+        19 => "GZIP",
+        20 => "JAVA CLASS"
     ];
 
     private function __construct()
@@ -36,24 +49,24 @@ class MotorFirmas
         $rutaExe = realpath(__DIR__ . '/../../engine/motor_firmas.exe');
 
         // Intentar cargar FFI (fallará si hay conflicto de arquitectura x86/x64)
-       if (class_exists('FFI') && $rutaDll !== false && file_exists($rutaDll)) {
-    try {
-        $this->ffi = FFI::cdef("
+        if (class_exists('FFI') && $rutaDll !== false && file_exists($rutaDll)) {
+            try {
+                $this->ffi = FFI::cdef("
             int AnalizarFirma(unsigned char* buffer, int size);
             char* ObtenerNombreTipo(int tipo);
             int VerificarFirmaEspecifica(unsigned char* buffer, int size, int tipo);
             int ObtenerVersionLibreria();
             int ObtenerTotalTiposSoportados();
         ", $rutaDll);
-    } catch (\Throwable $e) {
-        $this->ffi     = null;
-        $this->modoExe = true;
-    }
-} elseif ($rutaExe !== false && file_exists($rutaExe)) {
-    $this->modoExe = true;
-} else {
-    throw new \Exception("No se encontró motor_firmas.dll ni motor_firmas.exe.");
-}
+            } catch (\Throwable $e) {
+                $this->ffi     = null;
+                $this->modoExe = true;
+            }
+        } elseif ($rutaExe !== false && file_exists($rutaExe)) {
+            $this->modoExe = true;
+        } else {
+            throw new \Exception("No se encontró motor_firmas.dll ni motor_firmas.exe.");
+        }
     }
 
     /**
@@ -91,11 +104,9 @@ class MotorFirmas
 
         // ── Modo EXE ──────────────────────────────────────────────────────
         if ($this->modoExe) {
-            //lo cambie temporalmente porque me dio error al hacer pruebas, pero lo volvi a poner originalmente
-            /*$rutaExe = realpath(__DIR__ . '/../../engine/motor_firmas.exe');
+            $rutaExe = realpath(__DIR__ . '/../../engine/motor_firmas.exe');
             $output  = shell_exec(escapeshellarg($rutaExe) . ' ' . escapeshellarg($ruta));
-            return intval(trim($output));*/
-            return 1;
+            return intval(trim($output));
         }
 
         // ── Modo FFI (DLL x64) ────────────────────────────────────────────
