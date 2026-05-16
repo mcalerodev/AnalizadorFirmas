@@ -1,25 +1,27 @@
 <?php
 
-class StorageManager {
+require_once __DIR__ . '/../Service/MotorFirmas.php';
+
+class StorageManager
+{
 
     private $directorio;
 
-    public function __construct() {
+    public function __construct()
+    {
         $this->directorio = __DIR__ . '/../../storage/';
-        
+
         if (!file_exists($this->directorio)) {
             mkdir($this->directorio, 0777, true);
         }
     }
 
     // GUARDAR ARCHIVO
-    public function guardarArchivo($archivo) {
+    public function guardarArchivo($archivo)
+    {
 
-        // ✔ EXTENSIONES PERMITIDAS
-        $extensionesPermitidas = [
-            'jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp', 'ico',
-            'pdf','zip', 'rar', '7z', 'tar', 'gz','mp3', 'mp4', 'wav', 'avi'
-        ];
+        // ✔ EXTENSIONES PERMITIDAS — derivadas del array maestro MotorFirmas::$TIPOS
+        $extensionesPermitidas = MotorFirmas::getExtensionesPermitidas();
 
         $extension = strtolower(pathinfo($archivo['name'], PATHINFO_EXTENSION));
 
@@ -49,7 +51,8 @@ class StorageManager {
     }
 
     // ✔ ELIMINAR ARCHIVO FÍSICO
-    public function eliminarArchivo($ruta) {
+    public function eliminarArchivo($ruta)
+    {
 
         if (file_exists($ruta)) {
             unlink($ruta);

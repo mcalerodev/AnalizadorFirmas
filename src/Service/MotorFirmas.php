@@ -17,31 +17,66 @@ class MotorFirmas
     private $ffi      = null;   // null cuando se usa modo EXE
     private $modoExe  = false;  // true cuando FFI no está disponible
 
-    // Mapa de tipos usado en modo EXE (sin DLL)
-    // ⚠ Los códigos deben coincidir con los EQU definidos en engine/firmas.inc
-    private static $tiposMap = [
-        0  => "DESCONOCIDO",
-        1  => "JPEG",
-        2  => "PNG",
-        3  => "GIF",
-        4  => "BMP",
-        5  => "PDF",
-        6  => "ZIP",
-        7  => "DOCX/XLSX/PPTX",
-        8  => "EXE (PE)",
-        9  => "ELF",
-        10 => "MP3",
-        11 => "MP4",
-        12 => "RAR",
-        13 => "7Z",
-        14 => "WAV",
-        15 => "AVI",
-        16 => "WEBP",
-        17 => "ICO",
-        18 => "TAR",
-        19 => "GZIP",
-        20 => "JAVA CLASS"
+    /**
+     * Array maestro de tipos de archivo.
+     * ⚠ Los códigos (claves) deben coincidir con los EQU definidos en engine/firmas.inc.
+     *
+     * Formato: código => ['nombre' => string, 'extensiones' => string[]]
+     * Todos los demás mapas y arreglos del sistema se derivan de este.
+     */
+    private static $TIPOS = [
+        0  => ['nombre' => 'DESCONOCIDO',    'extensiones' => []],
+        1  => ['nombre' => 'JPEG',           'extensiones' => ['jpg', 'jpeg']],
+        2  => ['nombre' => 'PNG',            'extensiones' => ['png']],
+        3  => ['nombre' => 'GIF',            'extensiones' => ['gif']],
+        4  => ['nombre' => 'BMP',            'extensiones' => ['bmp']],
+        5  => ['nombre' => 'PDF',            'extensiones' => ['pdf']],
+        6  => ['nombre' => 'ZIP',            'extensiones' => ['zip']],
+        7  => ['nombre' => 'DOCX/XLSX/PPTX', 'extensiones' => ['docx', 'xlsx', 'pptx']],
+        8  => ['nombre' => 'EXE (PE)',        'extensiones' => ['exe']],
+        9  => ['nombre' => 'ELF',            'extensiones' => ['elf']],
+        10 => ['nombre' => 'MP3',            'extensiones' => ['mp3']],
+        11 => ['nombre' => 'MP4',            'extensiones' => ['mp4']],
+        12 => ['nombre' => 'RAR',            'extensiones' => ['rar']],
+        13 => ['nombre' => '7Z',             'extensiones' => ['7z']],
+        14 => ['nombre' => 'WAV',            'extensiones' => ['wav']],
+        15 => ['nombre' => 'AVI',            'extensiones' => ['avi']],
+        16 => ['nombre' => 'WEBP',           'extensiones' => ['webp']],
+        17 => ['nombre' => 'ICO',            'extensiones' => ['ico']],
+        18 => ['nombre' => 'TAR',            'extensiones' => ['tar']],
+        19 => ['nombre' => 'GZIP',           'extensiones' => ['gz']],
+        20 => ['nombre' => 'JAVA CLASS',     'extensiones' => ['class']],
     ];
+
+    /**
+     * Devuelve la lista plana de todas las extensiones permitidas.
+     * Fuente única: self::$TIPOS
+     */
+    public static function getExtensionesPermitidas(): array
+    {
+        $exts = [];
+        foreach (self::$TIPOS as $tipo) {
+            foreach ($tipo['extensiones'] as $ext) {
+                $exts[] = $ext;
+            }
+        }
+        return $exts;
+    }
+
+    /**
+     * Devuelve un mapa invertido: extensión => código de tipo.
+     * Fuente única: self::$TIPOS
+     */
+    public static function getMapaExtensiones(): array
+    {
+        $mapa = [];
+        foreach (self::$TIPOS as $codigo => $tipo) {
+            foreach ($tipo['extensiones'] as $ext) {
+                $mapa[$ext] = $codigo;
+            }
+        }
+        return $mapa;
+    }
 
     private function __construct()
     {
@@ -91,74 +126,56 @@ class MotorFirmas
     }
 
     public function analizarArchivo($ruta)
-{
-    if (!file_exists($ruta)) {
-        throw new \Exception("Archivo no existe: $ruta");
+    {
+        if (!file_exists($ruta)) {
+            throw new \Exception("Archivo no existe: $ruta");
+        }
+
+        $contenido = file_get_contents($ruta);
+
+        if (strlen($contenido) < 4) {
+            throw new \Exception("Archivo muy pequeño para analizar");
+        }
+
+        // ── Modo EXE ─────────────────────────────────────
+        if ($this->modoExe) {
+            $rutaExe = realpath(__DIR__ . '/../../engine/motor_firmas.exe');
+            $output = shell_exec(escapeshellarg($rutaExe) . ' ' . escapeshellarg($ruta));
+
+            $resultado = intval(trim($output));
+            error_log("Salida del EXE: " . trim($output) . "\n");
+        } else {
+            // ── Modo DLL / FFI ─────────────────────────────
+            $len = strlen($contenido);
+            $buffer = $this->ffi->new("unsigned char[$len]", false);
+
+            FFI::memcpy($buffer, $contenido, $len);
+
+            $resultado = $this->ffi->AnalizarFirma($buffer, $len);
+            error_log("Resultado del FFI: $resultado\n");
+        }
+
+        // Si DLL/EXE falla → detectar por extensión
+        if ($resultado < 0) {
+
+            $extension = strtolower(pathinfo($ruta, PATHINFO_EXTENSION));
+
+            error_log("Advertencia: No se pudo analizar el archivo con DLL/EXE. Intentando por extensión: $extension\n");
+
+            // Mapa derivado del array maestro self::$TIPOS
+            $mapa = self::getMapaExtensiones();
+
+            return $mapa[$extension] ?? 0;
+        }
+
+        return $resultado;
     }
 
-    $contenido = file_get_contents($ruta);
-
-    if (strlen($contenido) < 4) {
-        throw new \Exception("Archivo muy pequeño para analizar");
+    public function obtenerNombreTipo($tipo)
+    {
+        // Nombre derivado del array maestro self::$TIPOS
+        return self::$TIPOS[$tipo]['nombre'] ?? self::$TIPOS[0]['nombre'];
     }
-
-    // ── Modo EXE ─────────────────────────────────────
-    if ($this->modoExe) {
-        $rutaExe = realpath(__DIR__ . '/../../engine/motor_firmas.exe');
-        $output = shell_exec(escapeshellarg($rutaExe) . ' ' . escapeshellarg($ruta));
-
-        $resultado = intval(trim($output));
-
-    } else {
-
-        // ── Modo DLL / FFI ─────────────────────────────
-        $len = strlen($contenido);
-        $buffer = $this->ffi->new("unsigned char[$len]", false);
-
-        FFI::memcpy($buffer, $contenido, $len);
-
-        $resultado = $this->ffi->AnalizarFirma($buffer, $len);
-    }
-
-    // Si DLL/EXE falla → detectar por extensión
-    if ($resultado < 0) {
-
-        $extension = strtolower(pathinfo($ruta, PATHINFO_EXTENSION));
-
-        $mapa = [
-            'jpg'  => 1,
-            'jpeg' => 1,
-            'png'  => 2,
-            'pdf'  => 3,
-            'zip'  => 4,
-            'gif'  => 5,
-            'bmp'  => 6,
-            'exe'  => 7,
-            'mp3'  => 9
-        ];
-
-        return $mapa[$extension] ?? 0;
-    }
-
-    return $resultado;
-}
-
-   public function obtenerNombreTipo($tipo)
-{
-    $tipos = [
-        1 => "JPEG",
-        2 => "PNG",
-        3 => "PDF",
-        4 => "ZIP",
-        5 => "GIF",
-        6 => "BMP",
-        7 => "EXE",
-        8 => "ELF",
-        9 => "MP3"
-    ];
-
-    return $tipos[$tipo] ?? "DESCONOCIDO";
-}
 
     public function verificarTipoEspecifico($ruta, $tipo)
     {
@@ -185,7 +202,8 @@ class MotorFirmas
     public function totalTipos()
     {
         if ($this->modoExe) {
-            return count(self::$tiposMap);
+            // Total derivado del array maestro (excluye DESCONOCIDO, código 0)
+            return count(self::$TIPOS) - 1;
         }
         return $this->ffi->ObtenerTotalTiposSoportados();
     }
