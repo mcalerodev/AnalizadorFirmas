@@ -27,8 +27,8 @@ class ArchivoRepository {
     {
 
         $sql = "INSERT INTO archivos_analizados 
-        (nombre_original, tipo_detectado, hash_md5, tamaño, usuario_id, ruta) 
-        VALUES (?, ?, ?, ?, ?, ?)";
+        (nombre_original, tipo_detectado, hash_md5, tamaño, usuario_id) 
+        VALUES (?, ?, ?, ?, ?)";
 
         $stmt = $this->conexion->prepare($sql);
 
@@ -38,7 +38,7 @@ class ArchivoRepository {
             $datos['hash_md5'],
             $datos['tamaño'],
             $datos['usuario_id'],
-            $datos['ruta']
+            
         ]);
 
         $id = $this->conexion->lastInsertId();
@@ -81,7 +81,7 @@ class ArchivoRepository {
     {
 
         $sql = "UPDATE archivos_analizados 
-                SET nombre_original = ?, tipo_detectado = ?, hash_md5 = ?, tamaño = ?, usuario_id = ?, ruta = ?
+                SET nombre_original = ?, tipo_detectado = ?, hash_md5 = ?, tamaño = ?, usuario_id = ? = ?
                 WHERE id = ?";
 
         $stmt = $this->conexion->prepare($sql);
@@ -92,7 +92,7 @@ class ArchivoRepository {
             $datos['hash_md5'],
             $datos['tamaño'],
             $datos['usuario_id'],
-            $datos['ruta'],
+            
             $id
         ]);
 
