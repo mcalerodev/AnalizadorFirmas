@@ -14,21 +14,55 @@ require_once __DIR__ . '/../src/Database/Conexion.php';
 require_once __DIR__ . '/../src/Repository/ArchivoRepository.php';
 
 $repo     = new ArchivoRepository(Conexion::getInstance());
-$archivos = $repo->obtenerTodos();
+$archivos = $repo->obtenerTodos(); 
 
-// Colores e iconos por tipo de archivo
+error_log(print_r($archivos, true) . "\n");
+
+// Colores e iconos por tipo de archivo.
+// ⚠ Las claves deben coincidir con el campo 'nombre' del array maestro MotorFirmas::$TIPOS
 $tipoConfig = [
-    'DESCONOCIDO'  => ['color' => '#eceff1', 'border' => '#607d8b', 'icon' => 'assets/img/icons/unknown.png'],
-    'JPEG' => ['color' => '#fff3e0', 'border' => '#ff9800', 'icon' => 'assets/img/icons/jpg.png'],
-    'PNG'  => ['color' => '#e3f2fd', 'border' => '#2196f3', 'icon' => 'assets/img/icons/png.png'],
-    'GIF'  => ['color' => '#f3e5f5', 'border' => '#9c27b0', 'icon' => 'assets/img/icons/gif.png'],
-    'BMP'  => ['color' => '#fce4ec', 'border' => '#e91e63', 'icon' => 'assets/img/icons/bmp.png'],
-    'PDF'  => ['color' => '#ffebee', 'border' => '#f44336', 'icon' => 'assets/img/icons/pdf.png'],
-    'ZIP'  => ['color' => '#fff8e1', 'border' => '#ffc107', 'icon' => 'assets/img/icons/zip.png'],
-    'MP3'  => ['color' => '#e8f5e9', 'border' => '#4caf50', 'icon' => 'assets/img/icons/mp3.png'],
-    'MP4'  => ['color' => '#e0f2f1', 'border' => '#009688', 'icon' => 'assets/img/icons/mp4.png'],
-    'EXE'  => ['color' => '#efebe9', 'border' => '#795548', 'icon' => 'assets/img/icons/exe.png'],
-    'ELF'  => ['color' => '#eceff1', 'border' => '#607d8b', 'icon' => 'assets/img/icons/elf.png'],
+    // código 0
+    'DESCONOCIDO'    => ['color' => '#eceff1', 'border' => '#607d8b', 'icon' => 'assets/img/icons/unknown.png'],
+    // código 1
+    'JPEG'           => ['color' => '#fff3e0', 'border' => '#ff9800', 'icon' => 'assets/img/icons/jpg.png'],
+    // código 2
+    'PNG'            => ['color' => '#e3f2fd', 'border' => '#2196f3', 'icon' => 'assets/img/icons/png.png'],
+    // código 3
+    'GIF'            => ['color' => '#f3e5f5', 'border' => '#9c27b0', 'icon' => 'assets/img/icons/gif.png'],
+    // código 4
+    'BMP'            => ['color' => '#fce4ec', 'border' => '#e91e63', 'icon' => 'assets/img/icons/bmp.png'],
+    // código 5
+    'PDF'            => ['color' => '#ffebee', 'border' => '#f44336', 'icon' => 'assets/img/icons/pdf.png'],
+    // código 6
+    'ZIP'            => ['color' => '#fff8e1', 'border' => '#ffc107', 'icon' => 'assets/img/icons/zip.png'],
+    // código 7
+    'DOCX/XLSX/PPTX' => ['color' => '#e8eaf6', 'border' => '#3f51b5', 'icon' => 'assets/img/icons/docx.png'],
+    // código 8
+    'EXE (PE)'       => ['color' => '#efebe9', 'border' => '#795548', 'icon' => 'assets/img/icons/exe.png'],
+    // código 9
+    'ELF'            => ['color' => '#eceff1', 'border' => '#607d8b', 'icon' => 'assets/img/icons/elf.png'],
+    // código 10
+    'MP3'            => ['color' => '#e8f5e9', 'border' => '#4caf50', 'icon' => 'assets/img/icons/mp3.png'],
+    // código 11
+    'MP4'            => ['color' => '#e0f2f1', 'border' => '#009688', 'icon' => 'assets/img/icons/mp4.png'],
+    // código 12
+    'RAR'            => ['color' => '#fff3e0', 'border' => '#e65100', 'icon' => 'assets/img/icons/rar.png'],
+    // código 13
+    '7Z'             => ['color' => '#fbe9e7', 'border' => '#bf360c', 'icon' => 'assets/img/icons/7z.png'],
+    // código 14
+    'WAV'            => ['color' => '#f1f8e9', 'border' => '#7cb342', 'icon' => 'assets/img/icons/wav.png'],
+    // código 15
+    'AVI'            => ['color' => '#e0f7fa', 'border' => '#00838f', 'icon' => 'assets/img/icons/avi.png'],
+    // código 16
+    'WEBP'           => ['color' => '#e3f2fd', 'border' => '#1565c0', 'icon' => 'assets/img/icons/webp.png'],
+    // código 17
+    'ICO'            => ['color' => '#fafafa', 'border' => '#424242', 'icon' => 'assets/img/icons/ico.png'],
+    // código 18
+    'TAR'            => ['color' => '#fff9c4', 'border' => '#f9a825', 'icon' => 'assets/img/icons/tar.png'],
+    // código 19
+    'GZIP'           => ['color' => '#fff9c4', 'border' => '#f57f17', 'icon' => 'assets/img/icons/gz.png'],
+    // código 20
+    'JAVA CLASS'     => ['color' => '#ffebee', 'border' => '#b71c1c', 'icon' => 'assets/img/icons/class.png'],
 ];
 
 function getTipoConfig($tipo, $tipoConfig) {
@@ -57,7 +91,7 @@ function getTipoConfig($tipo, $tipoConfig) {
         --color-text: #000000;
         --color-text-soft: #666666;
         --color-border: #e0e0e0;
-        
+
         /* Colores de interfaz */
         --color-primary: #1976d2;
         --color-primary-dark: #1565c0;
@@ -66,30 +100,30 @@ function getTipoConfig($tipo, $tipoConfig) {
         --color-danger-light: #ffebee;
         --color-danger-border: #ef9a9a;
         --color-danger-text: #c62828;
-        
+
         /* Colores de drag & drop */
         --color-drop-bg: #f8faff;
         --color-drop-border: #90caf9;
         --color-drop-dragover-bg: #e3f2fd;
         --color-drop-dragover-border: #1976d2;
-        
+
         /* Colores de progreso */
         --color-progress-bg: #e0e0e0;
         --color-progress-fill: #1976d2;
-        
+
         /* Colores de tabla */
         --color-table-header-bg: #1565c0;
         --color-table-header-text: white;
         --color-table-hover-bg: #f5f7ff;
         --color-table-row-border: #f0f0f0;
-        
+
         /* Colores de navegación */
         --color-nav-bg: #1565c0;
         --color-nav-text: rgba(255, 255, 255, 0.85);
         --color-nav-hover: rgba(255, 255, 255, 0.15);
         --color-nav-active: rgba(255, 255, 255, 0.25);
         --color-nav-user: rgba(255, 255, 255, 0.6);
-        
+
         /* Colores auxiliares */
         --color-disabled: #9e9e9e;
         --color-icon-placeholder: #555;
@@ -371,7 +405,7 @@ function getTipoConfig($tipo, $tipoConfig) {
     }
 
     .dark-mode #resultado-card td {
-        border-bottom-color: rgba(255,255,255,0.1);
+        border-bottom-color: rgba(255, 255, 255, 0.1);
     }
 
     #resultado-card table {
@@ -678,7 +712,9 @@ function getTipoConfig($tipo, $tipoConfig) {
                 <?= htmlspecialchars($_SESSION['correo'] ?? '') ?>
             </span>
             <a href="logout.php">Cerrar sesión</a>
-            <button type="button" class="theme-toggle" onclick="toggleTheme()" aria-label="Cambiar modo claro/oscuro">Modo claro/oscuro <img src="assets/img/icons/modo.svg" class="icon-ui"></button>
+            <button type="button" class="theme-toggle" onclick="toggleTheme()"
+                aria-label="Cambiar modo claro/oscuro">Modo claro/oscuro <img src="assets/img/icons/modo.svg"
+                    class="icon-ui"></button>
         </div>
         <button class="hamburger" aria-label="Abrir menú" aria-expanded="false" aria-controls="nav-links"
             onclick="toggleMenu(this)">☰</button>
@@ -700,7 +736,7 @@ function getTipoConfig($tipo, $tipoConfig) {
                 <p id="drop-hint">Arrastra tu archivo aquí o selecciónalo</p>
                 <label for="file-input">Seleccionar archivo</label>
                 <input type="file" id="file-input" name="archivo" aria-label="Seleccionar archivo para analizar"
-                    accept=".jpg,.jpeg,.png,.gif,.bmp,.webp,.ico,.pdf,.zip,.rar,.7z,.tar,.gz,.mp3,.mp4,.wav,.avi">
+                    accept=".jpg,.jpeg,.png,.gif,.bmp,.webp,.ico,.pdf,.zip,.docx,.xlsx,.pptx,.exe,.elf,.mp3,.mp4,.rar,.7z,.wav,.avi,.tar,.gz,.class">
                 <p id="file-name" aria-live="polite"></p>
             </div>
 
@@ -963,7 +999,7 @@ function getTipoConfig($tipo, $tipoConfig) {
     `;
 
         // Preview solo para imágenes
-        if (['JPEG', 'PNG', 'GIF', 'BMP'].includes(tipo) && file) {
+        if (['JPEG', 'PNG', 'GIF', 'BMP', 'WEBP', 'ICO'].includes(tipo) && file) {
             const reader = new FileReader();
             reader.onload = e => {
                 preview.src = e.target.result;
