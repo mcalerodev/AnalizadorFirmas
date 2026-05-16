@@ -91,45 +91,74 @@ class MotorFirmas
     }
 
     public function analizarArchivo($ruta)
-    {
-        if (!file_exists($ruta)) {
-            throw new \Exception("Archivo no existe: $ruta");
-        }
+{
+    if (!file_exists($ruta)) {
+        throw new \Exception("Archivo no existe: $ruta");
+    }
 
-        $contenido = file_get_contents($ruta);
+    $contenido = file_get_contents($ruta);
 
-        if (strlen($contenido) < 4) {
-            throw new \Exception("Archivo muy pequeño para analizar");
-        }
+    if (strlen($contenido) < 4) {
+        throw new \Exception("Archivo muy pequeño para analizar");
+    }
 
-        // ── Modo EXE ──────────────────────────────────────────────────────
-        if ($this->modoExe) {
-            $rutaExe = realpath(__DIR__ . '/../../engine/motor_firmas.exe');
-            $output  = shell_exec(escapeshellarg($rutaExe) . ' ' . escapeshellarg($ruta));
-            return intval(trim($output));
-        }
+    // ── Modo EXE ─────────────────────────────────────
+    if ($this->modoExe) {
+        $rutaExe = realpath(__DIR__ . '/../../engine/motor_firmas.exe');
+        $output = shell_exec(escapeshellarg($rutaExe) . ' ' . escapeshellarg($ruta));
 
-        // ── Modo FFI (DLL x64) ────────────────────────────────────────────
-        $len    = strlen($contenido);
+        $resultado = intval(trim($output));
+
+    } else {
+
+        // ── Modo DLL / FFI ─────────────────────────────
+        $len = strlen($contenido);
         $buffer = $this->ffi->new("unsigned char[$len]", false);
+
         FFI::memcpy($buffer, $contenido, $len);
-        return $this->ffi->AnalizarFirma($buffer, $len);
+
+        $resultado = $this->ffi->AnalizarFirma($buffer, $len);
     }
 
-    public function obtenerNombreTipo($tipo)
-    {
-        // Modo EXE: usar mapa local
-        if ($this->modoExe) {
-            return isset(self::$tiposMap[$tipo]) ? self::$tiposMap[$tipo] : "DESCONOCIDO";
-        }
+    // Si DLL/EXE falla → detectar por extensión
+    if ($resultado < 0) {
 
-        // Modo FFI
-        $ptr = $this->ffi->ObtenerNombreTipo($tipo);
-        if ($ptr === null) {
-            return "DESCONOCIDO";
-        }
-        return FFI::string($ptr);
+        $extension = strtolower(pathinfo($ruta, PATHINFO_EXTENSION));
+
+        $mapa = [
+            'jpg'  => 1,
+            'jpeg' => 1,
+            'png'  => 2,
+            'pdf'  => 3,
+            'zip'  => 4,
+            'gif'  => 5,
+            'bmp'  => 6,
+            'exe'  => 7,
+            'mp3'  => 9
+        ];
+
+        return $mapa[$extension] ?? 0;
     }
+
+    return $resultado;
+}
+
+   public function obtenerNombreTipo($tipo)
+{
+    $tipos = [
+        1 => "JPEG",
+        2 => "PNG",
+        3 => "PDF",
+        4 => "ZIP",
+        5 => "GIF",
+        6 => "BMP",
+        7 => "EXE",
+        8 => "ELF",
+        9 => "MP3"
+    ];
+
+    return $tipos[$tipo] ?? "DESCONOCIDO";
+}
 
     public function verificarTipoEspecifico($ruta, $tipo)
     {
