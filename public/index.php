@@ -18,6 +18,7 @@ $archivos = $repo->obtenerTodos();
 
 // Colores e iconos por tipo de archivo
 $tipoConfig = [
+    'DESCONOCIDO'  => ['color' => '#eceff1', 'border' => '#607d8b', 'icon' => 'assets/img/icons/unknown.png'],
     'JPEG' => ['color' => '#fff3e0', 'border' => '#ff9800', 'icon' => 'assets/img/icons/jpg.png'],
     'PNG'  => ['color' => '#e3f2fd', 'border' => '#2196f3', 'icon' => 'assets/img/icons/png.png'],
     'GIF'  => ['color' => '#f3e5f5', 'border' => '#9c27b0', 'icon' => 'assets/img/icons/gif.png'],
