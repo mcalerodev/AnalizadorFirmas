@@ -19,21 +19,24 @@ class StorageManager
     // GUARDAR ARCHIVO
     public function guardarArchivo($archivo)
     {
-
+        error_log("Archivo recibido:" . print_r($archivo, true));
         // ✔ EXTENSIONES PERMITIDAS — derivadas del array maestro MotorFirmas::$TIPOS
         $extensionesPermitidas = MotorFirmas::getExtensionesPermitidas();
 
         $extension = strtolower(pathinfo($archivo['name'], PATHINFO_EXTENSION));
+        error_log("Archivo con extensión: " . $extension);
 
         if (!in_array($extension, $extensionesPermitidas)) {
+            error_log("Archivo rechazado por extensión: " . $archivo['name']);
             throw new Exception("Extensión no permitida");
         }
 
         // ✔ VALIDAR TAMAÑO (5MB)
-        $maxSize = 5 * 1024 * 1024;
+        $megabytes = 20;
+        $maxSize = $megabytes * 1024 * 1024;
 
         if ($archivo['size'] > $maxSize) {
-            throw new Exception("Archivo demasiado grande (máx 5MB)");
+            throw new Exception("Archivo demasiado grande (máx {$megabytes}MB)");
         }
 
         // ✔ NOMBRE SEGURO

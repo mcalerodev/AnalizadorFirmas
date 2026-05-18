@@ -1,0 +1,8 @@
+LIBRARY "motor_firmas"
+EXPORTS
+    AnalizarFirma
+    ObtenerNombreTipo
+    VerificarFirmaEspecifica
+    ObtenerVersionLibreria
+    ObtenerTotalTiposSoportados
+    CompararBytes

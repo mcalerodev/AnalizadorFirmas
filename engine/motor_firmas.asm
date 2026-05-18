@@ -1,27 +1,20 @@
 ; ============================================================================
-; motor_firmas.asm - Motor de Análisis de Firmas de Archivos
+; motor_firmas.asm - Motor de Análisis de Firmas de Archivos (x64)
 ; ============================================================================
 ; Este módulo implementa las funciones principales para detectar el tipo
 ; de archivo basándose en sus firmas mágicas (magic numbers).
 ;
 ; Autor: Proyecto Analizador de Firmas
 ; Fecha: Abril 2026
-; Plataforma: Windows x86 (32-bit)
+; Plataforma: Windows x64 (64-bit)
 ; ============================================================================
 
-.386
-.MODEL FLAT, STDCALL
 OPTION CASEMAP:NONE
 
 ; ----------------------------------------------------------------------------
 ; Includes
 ; ----------------------------------------------------------------------------
 INCLUDE firmas.inc
-
-; ----------------------------------------------------------------------------
-; Prototipos de Windows API (para DLL)
-; ----------------------------------------------------------------------------
-; No se necesitan APIs de Windows para las funciones de análisis puro
 
 ; ============================================================================
 ; SECCIÓN DE CÓDIGO
@@ -32,13 +25,13 @@ INCLUDE firmas.inc
 ; DllMain - Punto de entrada de la DLL
 ; ============================================================================
 ; Parámetros:
-;   hInstance   - Handle de la instancia de la DLL
-;   fdwReason   - Razón de la llamada
-;   lpReserved  - Reservado
+;   hInstance   - Handle de la instancia de la DLL (QWORD en 64-bit)
+;   fdwReason   - Razón de la llamada (DWORD)
+;   lpReserved  - Reservado (QWORD)
 ; Retorno:
 ;   EAX = TRUE (1) si éxito
 ; ============================================================================
-DllMain PROC hInstance:DWORD, fdwReason:DWORD, lpReserved:DWORD
+DllMain PROC hInstance:QWORD, fdwReason:DWORD, lpReserved:QWORD
     mov     eax, 1                  ; Retornar TRUE
     ret
 DllMain ENDP
@@ -46,50 +39,43 @@ DllMain ENDP
 ; ============================================================================
 ; AnalizarFirma - Función principal de análisis de firma
 ; ============================================================================
-; Descripción:
-;   Analiza los primeros bytes de un buffer para determinar el tipo de archivo.
-;
 ; Parámetros:
-;   pBuffer     - Puntero al buffer con los datos del archivo (mínimo 16 bytes)
-;   dwTamanio   - Tamaño del buffer en bytes
-;
+;   pBuffer     - Puntero al buffer con datos (mínimo 16 bytes) -> AHORA ES QWORD
+;   dwTamanio   - Tamaño del buffer en bytes -> DWORD
 ; Retorno:
 ;   EAX = Código del tipo de archivo (ver firmas.inc para códigos)
-;         0 = Tipo desconocido
-;         Valores negativos = Código de error
-;
-; Registros modificados: EAX, ECX, EDX (preserva EBX, ESI, EDI, EBP)
+; Registros modificados: RAX, RCX, RDX (preserva RBX, RSI, RDI, RBP)
 ; ============================================================================
-AnalizarFirma PROC USES ebx esi edi, pBuffer:DWORD, dwTamanio:DWORD
+AnalizarFirma PROC USES rbx rsi rdi, pBuffer:QWORD, dwTamanio:DWORD
     LOCAL resultado:DWORD
     
     ; Inicializar resultado como desconocido
     mov     resultado, TIPO_DESCONOCIDO
     
-    ; Validar parámetros
-    mov     eax, pBuffer
-    test    eax, eax
+    ; Validar parámetros usando registros de 64 bits
+    mov     rax, pBuffer
+    test    rax, rax
     jz      @ErrorBufferNulo
     
     mov     eax, dwTamanio
     cmp     eax, MIN_BYTES_FIRMA
     jb      @ErrorTamanio
     
-    ; Cargar puntero al buffer
-    mov     esi, pBuffer
+    ; Cargar puntero al buffer en registro de 64 bits (RSI)
+    mov     rsi, pBuffer
     
     ; ========================================================================
     ; VERIFICACIÓN DE FIRMAS (ordenadas por frecuencia de uso)
     ; ========================================================================
     
     ; --- Verificar JPEG (FF D8 FF) ---
-    movzx   eax, BYTE PTR [esi]
+    movzx   eax, BYTE PTR [rsi]
     cmp     al, 0FFh
     jne     @NoJPEG
-    movzx   eax, BYTE PTR [esi+1]
+    movzx   eax, BYTE PTR [rsi+1]
     cmp     al, 0D8h
     jne     @NoJPEG
-    movzx   eax, BYTE PTR [esi+2]
+    movzx   eax, BYTE PTR [rsi+2]
     cmp     al, 0FFh
     jne     @NoJPEG
     mov     resultado, TIPO_JPEG
@@ -97,96 +83,93 @@ AnalizarFirma PROC USES ebx esi edi, pBuffer:DWORD, dwTamanio:DWORD
     
 @NoJPEG:
     ; --- Verificar PNG (89 50 4E 47 0D 0A 1A 0A) ---
-    mov     eax, DWORD PTR [esi]
-    cmp     eax, 474E5089h          ; Primeros 4 bytes de PNG (little endian)
+    mov     eax, DWORD PTR [rsi]
+    cmp     eax, 474E5089h          
     jne     @NoPNG
-    mov     eax, DWORD PTR [esi+4]
-    cmp     eax, 0A1A0A0Dh          ; Siguientes 4 bytes de PNG
+    mov     eax, DWORD PTR [rsi+4]
+    cmp     eax, 0A1A0A0Dh          
     jne     @NoPNG
     mov     resultado, TIPO_PNG
     jmp     @Fin
     
 @NoPNG:
     ; --- Verificar PDF (%PDF = 25 50 44 46) ---
-    mov     eax, DWORD PTR [esi]
-    cmp     eax, 46444025h          ; "%PDF" en little endian
+    mov     eax, DWORD PTR [rsi]
+    cmp     eax, 46444025h          
     jne     @NoPDF
     mov     resultado, TIPO_PDF
     jmp     @Fin
     
 @NoPDF:
-    ; --- Verificar ZIP/DOCX/XLSX/PPTX (50 4B 03 04 o variantes) ---
-    movzx   eax, WORD PTR [esi]
-    cmp     ax, 4B50h               ; "PK" en little endian
+    ; --- Verificar ZIP/DOCX/XLSX/PPTX ---
+    movzx   eax, WORD PTR [rsi]
+    cmp     ax, 4B50h               
     jne     @NoZIP
-    ; Es un archivo PK, verificar si es ZIP normal o vacío
-    movzx   eax, WORD PTR [esi+2]
-    cmp     ax, 0403h               ; ZIP normal
+    movzx   eax, WORD PTR [rsi+2]
+    cmp     ax, 0403h               
     je      @EsZIP
-    cmp     ax, 0605h               ; ZIP vacío
+    cmp     ax, 0605h               
     je      @EsZIP
-    cmp     ax, 0807h               ; ZIP spanned
+    cmp     ax, 0807h               
     je      @EsZIP
     jmp     @NoZIP
     
 @EsZIP:
-    ; Podría ser DOCX/XLSX/PPTX (necesitaría verificar contenido interno)
-    ; Por ahora, marcamos como ZIP
     mov     resultado, TIPO_ZIP
     jmp     @Fin
     
 @NoZIP:
-    ; --- Verificar GIF (47 49 46 38) ---
-    mov     eax, DWORD PTR [esi]
-    cmp     eax, 38464947h          ; "GIF8" en little endian
+    ; --- Verificar GIF ---
+    mov     eax, DWORD PTR [rsi]
+    cmp     eax, 38464947h          
     jne     @NoGIF
     mov     resultado, TIPO_GIF
     jmp     @Fin
     
 @NoGIF:
-    ; --- Verificar BMP (42 4D = "BM") ---
-    movzx   eax, WORD PTR [esi]
-    cmp     ax, 4D42h               ; "BM" en little endian
+    ; --- Verificar BMP ---
+    movzx   eax, WORD PTR [rsi]
+    cmp     ax, 4D42h               
     jne     @NoBMP
     mov     resultado, TIPO_BMP
     jmp     @Fin
     
 @NoBMP:
-    ; --- Verificar EXE/PE (4D 5A = "MZ") ---
-    movzx   eax, WORD PTR [esi]
-    cmp     ax, 5A4Dh               ; "MZ" en little endian
+    ; --- Verificar EXE/PE ---
+    movzx   eax, WORD PTR [rsi]
+    cmp     ax, 5A4Dh               
     jne     @NoEXE
     mov     resultado, TIPO_EXE
     jmp     @Fin
     
 @NoEXE:
-    ; --- Verificar ELF (7F 45 4C 46 = ".ELF") ---
-    mov     eax, DWORD PTR [esi]
-    cmp     eax, 464C457Fh          ; ".ELF" en little endian
+    ; --- Verificar ELF ---
+    mov     eax, DWORD PTR [rsi]
+    cmp     eax, 464C457Fh          
     jne     @NoELF
     mov     resultado, TIPO_ELF
     jmp     @Fin
     
 @NoELF:
-    ; --- Verificar MP3 con ID3 (49 44 33 = "ID3") ---
-    movzx   eax, BYTE PTR [esi]
-    cmp     al, 49h                 ; 'I'
+    ; --- Verificar MP3 con ID3 ---
+    movzx   eax, BYTE PTR [rsi]
+    cmp     al, 49h                 
     jne     @NoID3
-    movzx   eax, BYTE PTR [esi+1]
-    cmp     al, 44h                 ; 'D'
+    movzx   eax, BYTE PTR [rsi+1]
+    cmp     al, 44h                 
     jne     @NoID3
-    movzx   eax, BYTE PTR [esi+2]
-    cmp     al, 33h                 ; '3'
+    movzx   eax, BYTE PTR [rsi+2]
+    cmp     al, 33h                 
     jne     @NoID3
     mov     resultado, TIPO_MP3
     jmp     @Fin
     
 @NoID3:
-    ; --- Verificar MP3 Frame Sync (FF FB, FF FA, FF F3, FF F2) ---
-    movzx   eax, BYTE PTR [esi]
+    ; --- Verificar MP3 Frame Sync ---
+    movzx   eax, BYTE PTR [rsi]
     cmp     al, 0FFh
     jne     @NoMP3Sync
-    movzx   eax, BYTE PTR [esi+1]
+    movzx   eax, BYTE PTR [rsi+1]
     cmp     al, 0FBh
     je      @EsMP3
     cmp     al, 0FAh
@@ -202,22 +185,20 @@ AnalizarFirma PROC USES ebx esi edi, pBuffer:DWORD, dwTamanio:DWORD
     jmp     @Fin
     
 @NoMP3Sync:
-    ; --- Verificar RIFF (52 49 46 46 = "RIFF") para WAV/AVI/WebP ---
-    mov     eax, DWORD PTR [esi]
-    cmp     eax, 46464952h          ; "RIFF" en little endian
+    ; --- Verificar RIFF ---
+    mov     eax, DWORD PTR [rsi]
+    cmp     eax, 46464952h          
     jne     @NoRIFF
     
-    ; Verificar tamaño suficiente para leer offset 8
     cmp     dwTamanio, 12
     jb      @RIFFDesconocido
     
-    ; Verificar subtipo en offset 8
-    mov     eax, DWORD PTR [esi+8]
-    cmp     eax, 45564157h          ; "WAVE" en little endian
+    mov     eax, DWORD PTR [rsi+8]
+    cmp     eax, 45564157h          
     je      @EsWAV
-    cmp     eax, 20495641h          ; "AVI " en little endian
+    cmp     eax, 20495641h          
     je      @EsAVI
-    cmp     eax, 50424557h          ; "WEBP" en little endian
+    cmp     eax, 50424557h          
     je      @EsWEBP
     jmp     @RIFFDesconocido
     
@@ -234,81 +215,79 @@ AnalizarFirma PROC USES ebx esi edi, pBuffer:DWORD, dwTamanio:DWORD
     jmp     @Fin
     
 @RIFFDesconocido:
-    ; RIFF pero subtipo desconocido
     mov     resultado, TIPO_DESCONOCIDO
     jmp     @Fin
     
 @NoRIFF:
-    ; --- Verificar MP4/MOV (ftyp en offset 4) ---
+    ; --- Verificar MP4/MOV ---
     cmp     dwTamanio, 8
     jb      @NoMP4
-    mov     eax, DWORD PTR [esi+4]
-    cmp     eax, 70797466h          ; "ftyp" en little endian
+    mov     eax, DWORD PTR [rsi+4]
+    cmp     eax, 70797466h          
     jne     @NoMP4
     mov     resultado, TIPO_MP4
     jmp     @Fin
     
 @NoMP4:
-    ; --- Verificar RAR (52 61 72 21 1A 07 = "Rar!..") ---
-    mov     eax, DWORD PTR [esi]
-    cmp     eax, 21726152h          ; "Rar!" en little endian
+    ; --- Verificar RAR ---
+    mov     eax, DWORD PTR [rsi]
+    cmp     eax, 21726152h          
     jne     @NoRAR
-    movzx   eax, WORD PTR [esi+4]
-    cmp     ax, 071Ah               ; Siguientes 2 bytes
+    movzx   eax, WORD PTR [rsi+4]
+    cmp     ax, 071Ah               
     jne     @NoRAR
     mov     resultado, TIPO_RAR
     jmp     @Fin
     
 @NoRAR:
-    ; --- Verificar 7-Zip (37 7A BC AF 27 1C) ---
-    mov     eax, DWORD PTR [esi]
-    cmp     eax, 0AFBC7A37h         ; Primeros 4 bytes de 7z
+    ; --- Verificar 7-Zip ---
+    mov     eax, DWORD PTR [rsi]
+    cmp     eax, 0AFBC7A37h         
     jne     @No7Z
-    movzx   eax, WORD PTR [esi+4]
+    movzx   eax, WORD PTR [rsi+4]
     cmp     ax, 1C27h
     jne     @No7Z
     mov     resultado, TIPO_7Z
     jmp     @Fin
     
 @No7Z:
-    ; --- Verificar ICO (00 00 01 00) ---
-    mov     eax, DWORD PTR [esi]
+    ; --- Verificar ICO ---
+    mov     eax, DWORD PTR [rsi]
     cmp     eax, 00010000h
     jne     @NoICO
     mov     resultado, TIPO_ICO
     jmp     @Fin
     
 @NoICO:
-    ; --- Verificar GZIP (1F 8B) ---
-    movzx   eax, WORD PTR [esi]
+    ; --- Verificar GZIP ---
+    movzx   eax, WORD PTR [rsi]
     cmp     ax, 8B1Fh
     jne     @NoGZIP
     mov     resultado, TIPO_GZIP
     jmp     @Fin
     
 @NoGZIP:
-    ; --- Verificar Java Class (CA FE BA BE) ---
-    mov     eax, DWORD PTR [esi]
-    cmp     eax, 0BEBAFECAh         ; "CAFEBABE" en little endian
+    ; --- Verificar Java Class ---
+    mov     eax, DWORD PTR [rsi]
+    cmp     eax, 0BEBAFECAh         
     jne     @NoClass
     mov     resultado, TIPO_CLASS
     jmp     @Fin
     
 @NoClass:
-    ; --- Verificar TAR (ustar en offset 257) ---
-    cmp     dwTamanio, 262          ; Necesitamos al menos 262 bytes
+    ; --- Verificar TAR ---
+    cmp     dwTamanio, 262          
     jb      @NoTAR
-    mov     eax, DWORD PTR [esi+257]
-    cmp     eax, 61747375h          ; "usta" en little endian
+    mov     eax, DWORD PTR [rsi+257]
+    cmp     eax, 61747375h          
     jne     @NoTAR
-    movzx   eax, BYTE PTR [esi+261]
-    cmp     al, 72h                 ; 'r'
+    movzx   eax, BYTE PTR [rsi+261]
+    cmp     al, 72h                 
     jne     @NoTAR
     mov     resultado, TIPO_TAR
     jmp     @Fin
     
 @NoTAR:
-    ; Tipo no reconocido
     mov     resultado, TIPO_DESCONOCIDO
     jmp     @Fin
     
@@ -326,64 +305,54 @@ AnalizarFirma ENDP
 
 ; ============================================================================
 ; ObtenerNombreTipo - Obtiene el nombre descriptivo del tipo de archivo
-; ============================================================================
-; Descripción:
-;   Devuelve un puntero a una cadena con el nombre del tipo de archivo.
-;
-; Parámetros:
-;   dwTipo      - Código del tipo de archivo (retornado por AnalizarFirma)
-;
-; Retorno:
-;   EAX = Puntero a cadena ASCIIZ con el nombre del tipo
-;         NULL si el código es inválido
-;
-; Registros modificados: EAX
+; Retorno en x64: RAX = Puntero de 64 bits a la cadena ASCIIZ
 ; ============================================================================
 ObtenerNombreTipo PROC dwTipo:DWORD
     ; Validar rango del tipo
     mov     eax, dwTipo
     cmp     eax, 0
-    jl      @TipoInvalido           ; Códigos de error son negativos
+    jl      @TipoInvalido           
     cmp     eax, MAX_FIRMAS
     jae     @TipoInvalido
     
+    ; Extender EAX a RAX de 64 bits para matemáticas de punteros
+    movsxd  rax, dwTipo
+    
     ; Calcular offset en la tabla de nombres
-    shl     eax, 2                  ; Multiplicar por 4 (tamaño de DWORD)
-    add     eax, OFFSET TablaNombresTipos
-    mov     eax, [eax]              ; Obtener puntero al nombre
+    ; En x64 los punteros son de 8 bytes, así que multiplicamos por 8 (shl rax, 3)
+    shl     rax, 3                  
+    lea     rcx, TablaNombresTipos  ; Cargar dirección base en RCX
+    add     rax, rcx                ; Sumar base + desplazamiento
+    mov     rax, [rax]              ; Obtener el puntero QWORD final a la cadena
     ret
     
 @TipoInvalido:
-    xor     eax, eax                ; Retornar NULL
+    xor     rax, rax                ; Retornar NULL (0) en RAX
     ret
 ObtenerNombreTipo ENDP
 
 ; ============================================================================
-; VerificarFirmaEspecifica - Verifica si el archivo coincide con un tipo específico
+; VerificarFirmaEspecifica - Verifica si coincide con un tipo específico
+; NOTA: Reescrito sin INVOKE para usar la convención de llamadas FastCall x64
 ; ============================================================================
-; Descripción:
-;   Verifica si los datos del buffer coinciden con un tipo de archivo específico.
-;
-; Parámetros:
-;   pBuffer     - Puntero al buffer con los datos
-;   dwTamanio   - Tamaño del buffer
-;   dwTipo      - Tipo de archivo a verificar
-;
-; Retorno:
-;   EAX = 1 si coincide, 0 si no coincide
-;         Valores negativos = Código de error
-;
-; Registros modificados: EAX
-; ============================================================================
-VerificarFirmaEspecifica PROC pBuffer:DWORD, dwTamanio:DWORD, dwTipo:DWORD
+VerificarFirmaEspecifica PROC pBuffer:QWORD, dwTamanio:DWORD, dwTipo:DWORD
     LOCAL tipoDetectado:DWORD
     
-    ; Usar AnalizarFirma para detectar el tipo
-    INVOKE  AnalizarFirma, pBuffer, dwTamanio
+    ; Preparar parámetros en registros requeridos por x64 para llamar a AnalizarFirma
+    ; Param 1 (RCX) = pBuffer (QWORD)
+    ; Param 2 (RDX) = dwTamanio (DWORD)
+    mov     rcx, pBuffer
+    mov     edx, dwTamanio
+    
+    ; Reservar "Shadow Space" (32 bytes) obligatorio en x64 antes de un CALL
+    sub     rsp, 32
+    call    AnalizarFirma
+    ; Restaurar la pila
+    add     rsp, 32
     
     ; Verificar errores
     test    eax, eax
-    js      @RetornarError          ; Si es negativo, es un error
+    js      @RetornarError          
     
     ; Comparar con el tipo solicitado
     mov     tipoDetectado, eax
@@ -391,50 +360,27 @@ VerificarFirmaEspecifica PROC pBuffer:DWORD, dwTamanio:DWORD, dwTipo:DWORD
     cmp     eax, tipoDetectado
     jne     @NoCoincide
     
-    ; Coincide
     mov     eax, 1
     ret
     
 @NoCoincide:
-    xor     eax, eax                ; Retornar 0
+    xor     eax, eax                
     ret
     
 @RetornarError:
-    ; EAX ya contiene el código de error
     ret
 VerificarFirmaEspecifica ENDP
 
 ; ============================================================================
-; ObtenerVersionLibreria - Obtiene la versión de la librería
-; ============================================================================
-; Descripción:
-;   Devuelve el número de versión de la librería.
-;
-; Parámetros: Ninguno
-;
-; Retorno:
-;   EAX = Número de versión (formato: 0xMMMMmmmm donde MMMM=mayor, mmmm=menor)
-;         Ejemplo: 0x00010000 = versión 1.0
-;
-; Registros modificados: EAX
+; ObtenerVersionLibreria
 ; ============================================================================
 ObtenerVersionLibreria PROC
-    mov     eax, 00010000h          ; Versión 1.0
+    mov     eax, 00010000h          
     ret
 ObtenerVersionLibreria ENDP
 
 ; ============================================================================
-; ObtenerTotalTiposSoportados - Obtiene el número total de tipos soportados
-; ============================================================================
-; Descripción:
-;   Devuelve la cantidad de tipos de archivo que la librería puede detectar.
-;
-; Parámetros: Ninguno
-;
-; Retorno:
-;   EAX = Número de tipos soportados
-;
-; Registros modificados: EAX
+; ObtenerTotalTiposSoportados
 ; ============================================================================
 ObtenerTotalTiposSoportados PROC
     mov     eax, MAX_FIRMAS
@@ -443,34 +389,21 @@ ObtenerTotalTiposSoportados ENDP
 
 ; ============================================================================
 ; CompararBytes - Función auxiliar para comparar bytes
+; Parámetros son QWORD para soportar punteros de 64 bits
 ; ============================================================================
-; Descripción:
-;   Compara dos secuencias de bytes.
-;
-; Parámetros:
-;   pBuffer1    - Puntero al primer buffer
-;   pBuffer2    - Puntero al segundo buffer
-;   dwLongitud  - Número de bytes a comparar
-;
-; Retorno:
-;   EAX = 1 si son iguales, 0 si son diferentes
-;
-; Registros modificados: EAX, ECX
-; ============================================================================
-CompararBytes PROC USES esi edi, pBuffer1:DWORD, pBuffer2:DWORD, dwLongitud:DWORD
-    mov     esi, pBuffer1
-    mov     edi, pBuffer2
+CompararBytes PROC USES rsi rdi, pBuffer1:QWORD, pBuffer2:QWORD, dwLongitud:DWORD
+    mov     rsi, pBuffer1
+    mov     rdi, pBuffer2
     mov     ecx, dwLongitud
     
-    ; Validar parámetros
-    test    esi, esi
+    ; Validar parámetros de 64 bits
+    test    rsi, rsi
     jz      @Diferentes
-    test    edi, edi
+    test    rdi, rdi
     jz      @Diferentes
     test    ecx, ecx
-    jz      @Iguales                ; 0 bytes = iguales
+    jz      @Iguales                
     
-    ; Comparar byte por byte
     cld
     repe    cmpsb
     jne     @Diferentes

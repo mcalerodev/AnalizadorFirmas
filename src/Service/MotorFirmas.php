@@ -1,28 +1,17 @@
 <?php
 
 /**
- * Clase MotorFirmas — Patrón Singleton con modo dual (FFI / EXE fallback)
- *
- * Intenta cargar la DLL con PHP FFI (x64).
- * Si la DLL es x86 y PHP es x64, cae automáticamente al modo EXE
- * usando motor_firmas.exe como proceso externo.
- *
- * Modo FFI : comunicación directa con la DLL — más rápido.
- * Modo EXE : llama al ejecutable externo con shell_exec — compatible siempre.
+ * Clase MotorFirmas — Patrón Singleton con soporte para AnalizadorFirmas.dll (x64)
  */
 class MotorFirmas
 {
     private static $instancia = null;
 
-    private $ffi      = null;   // null cuando se usa modo EXE
-    private $modoExe  = false;  // true cuando FFI no está disponible
+    private $ffi      = null;
+    private $modoExe  = false;
 
     /**
-     * Array maestro de tipos de archivo.
-     * ⚠ Los códigos (claves) deben coincidir con los EQU definidos en engine/firmas.inc.
-     *
-     * Formato: código => ['nombre' => string, 'extensiones' => string[]]
-     * Todos los demás mapas y arreglos del sistema se derivan de este.
+     * Códigos de tipo coincidentes con engine/firmas.inc
      */
     private static $TIPOS = [
         0  => ['nombre' => 'DESCONOCIDO',    'extensiones' => []],
@@ -33,7 +22,7 @@ class MotorFirmas
         5  => ['nombre' => 'PDF',            'extensiones' => ['pdf']],
         6  => ['nombre' => 'ZIP',            'extensiones' => ['zip']],
         7  => ['nombre' => 'DOCX/XLSX/PPTX', 'extensiones' => ['docx', 'xlsx', 'pptx']],
-        8  => ['nombre' => 'EXE (PE)',        'extensiones' => ['exe']],
+        8  => ['nombre' => 'EXE (PE)',       'extensiones' => ['exe']],
         9  => ['nombre' => 'ELF',            'extensiones' => ['elf']],
         10 => ['nombre' => 'MP3',            'extensiones' => ['mp3']],
         11 => ['nombre' => 'MP4',            'extensiones' => ['mp4']],
@@ -48,25 +37,15 @@ class MotorFirmas
         20 => ['nombre' => 'JAVA CLASS',     'extensiones' => ['class']],
     ];
 
-    /**
-     * Devuelve la lista plana de todas las extensiones permitidas.
-     * Fuente única: self::$TIPOS
-     */
     public static function getExtensionesPermitidas(): array
     {
         $exts = [];
         foreach (self::$TIPOS as $tipo) {
-            foreach ($tipo['extensiones'] as $ext) {
-                $exts[] = $ext;
-            }
+            $exts = array_merge($exts, $tipo['extensiones']);
         }
         return $exts;
     }
 
-    /**
-     * Devuelve un mapa invertido: extensión => código de tipo.
-     * Fuente única: self::$TIPOS
-     */
     public static function getMapaExtensiones(): array
     {
         $mapa = [];
@@ -80,34 +59,32 @@ class MotorFirmas
 
     private function __construct()
     {
-        $rutaDll = realpath(__DIR__ . '/../../engine/motor_firmas.dll');
+        // 1. ACTUALIZACIÓN: Nombre de la DLL generado por Visual Studio
+        $rutaDll = realpath(__DIR__ . '/../../engine/AnalizadorFirmas.dll');
         $rutaExe = realpath(__DIR__ . '/../../engine/motor_firmas.exe');
 
-        // Intentar cargar FFI (fallará si hay conflicto de arquitectura x86/x64)
         if (class_exists('FFI') && $rutaDll !== false && file_exists($rutaDll)) {
             try {
+                // 2. FIRMAS ACTUALIZADAS: Coincidiendo con el .def y el código x64 de ASM
                 $this->ffi = FFI::cdef("
-            int AnalizarFirma(unsigned char* buffer, int size);
-            char* ObtenerNombreTipo(int tipo);
-            int VerificarFirmaEspecifica(unsigned char* buffer, int size, int tipo);
-            int ObtenerVersionLibreria();
-            int ObtenerTotalTiposSoportados();
-        ", $rutaDll);
+                    int AnalizarFirma(const unsigned char* pBuffer, int dwTamanio);
+                    const char* ObtenerNombreTipo(int dwTipo);
+                    int VerificarFirmaEspecifica(const unsigned char* pBuffer, int dwTamanio, int dwTipo);
+                    int ObtenerVersionLibreria();
+                    int ObtenerTotalTiposSoportados();
+                ", $rutaDll);
             } catch (\Throwable $e) {
+                error_log("Fallo al cargar FFI: " . $e->getMessage());
                 $this->ffi     = null;
                 $this->modoExe = true;
             }
         } elseif ($rutaExe !== false && file_exists($rutaExe)) {
             $this->modoExe = true;
         } else {
-            throw new \Exception("No se encontró motor_firmas.dll ni motor_firmas.exe.");
+            throw new \Exception("No se encontró AnalizadorFirmas.dll ni motor_firmas.exe.");
         }
     }
 
-    /**
-     * Devuelve la única instancia de MotorFirmas.
-     * La DLL se carga solo la primera vez que se llama.
-     */
     public static function getInstance()
     {
         if (self::$instancia === null) {
@@ -116,14 +93,7 @@ class MotorFirmas
         return self::$instancia;
     }
 
-    // Evitar clonación del Singleton
     private function __clone() {}
-
-    /** Indica si está operando con EXE en lugar de DLL */
-    public function esModoExe()
-    {
-        return $this->modoExe;
-    }
 
     public function analizarArchivo($ruta)
     {
@@ -131,40 +101,66 @@ class MotorFirmas
             throw new \Exception("Archivo no existe: $ruta");
         }
 
-        $contenido = file_get_contents($ruta);
-
-        if (strlen($contenido) < 4) {
+        $tamanioReal = filesize($ruta);
+        if ($tamanioReal < 16) { // Mínimo definido en MIN_BYTES_FIRMA (firmas.inc)
             throw new \Exception("Archivo muy pequeño para analizar");
         }
 
-        // ── Modo EXE ─────────────────────────────────────
+        // ====================================================================
+        // MEJORA 1: LECTURA OPTIMIZADA DE 1024 BYTES (AHORRO DE MEMORIA)
+        // ====================================================================
+        $bytesALeer = min($tamanioReal, 1024);
+        $manejador = fopen($ruta, "rb");
+        if (!$manejador) {
+            throw new \Exception("No se pudo abrir el archivo para lectura.");
+        }
+        $cabecera = fread($manejador, $bytesALeer);
+        fclose($manejador);
+
         if ($this->modoExe) {
             $rutaExe = realpath(__DIR__ . '/../../engine/motor_firmas.exe');
             $output = shell_exec(escapeshellarg($rutaExe) . ' ' . escapeshellarg($ruta));
-
             $resultado = intval(trim($output));
-            error_log("Salida del EXE: " . trim($output) . "\n");
         } else {
-            // ── Modo DLL / FFI ─────────────────────────────
-            $len = strlen($contenido);
-            $buffer = $this->ffi->new("unsigned char[$len]", false);
+            // Usamos un buffer de C para evitar problemas de punteros en x64
+            // y solo pasamos los 1024 bytes leídos
+            $buffer = FFI::new("unsigned char[$bytesALeer]", false);
+            FFI::memcpy($buffer, $cabecera, $bytesALeer);
 
-            FFI::memcpy($buffer, $contenido, $len);
-
-            $resultado = $this->ffi->AnalizarFirma($buffer, $len);
-            error_log("Resultado del FFI: $resultado\n");
+            $resultado = $this->ffi->AnalizarFirma($buffer, $bytesALeer);
+            unset($buffer);
         }
 
-        // Si DLL/EXE falla → detectar por extensión
-        if ($resultado < 0) {
+        // ====================================================================
+        // MEJORA 2: VALIDACIÓN EXTRA PARA ARCHIVOS OFFICE DENTRO DE ZIP
+        // ====================================================================
+        if ($resultado === 6) { // Si el motor detectó "ZIP"
+            if (class_exists('ZipArchive')) {
+                $zip = new ZipArchive();
+                if ($zip->open($ruta) === TRUE) {
+                    // Verificamos si contiene estructuras XML propias de Office
+                    if (
+                        $zip->locateName('xl/workbook.xml') !== false ||
+                        $zip->locateName('word/document.xml') !== false ||
+                        $zip->locateName('ppt/presentation.xml') !== false
+                    ) {
 
+                        $resultado = 7; // Reasignamos al código DOCX/XLSX/PPTX
+                        error_log("ZipArchive detectó estructura de Office en $ruta. Reasignando a Tipo 7.");
+                    }
+                    $zip->close();
+                }
+            } else {
+                error_log("Advertencia: ZipArchive no está habilitado en PHP.");
+            }
+        }
+
+        error_log("Análisis de $ruta → Tipo Final: $resultado");
+
+        if ($resultado <= 0) {
             $extension = strtolower(pathinfo($ruta, PATHINFO_EXTENSION));
-
-            error_log("Advertencia: No se pudo analizar el archivo con DLL/EXE. Intentando por extensión: $extension\n");
-
-            // Mapa derivado del array maestro self::$TIPOS
             $mapa = self::getMapaExtensiones();
-
+            error_log("Archivo no reconocido por la DLL, intentando por extensión: $extension → " . ($mapa[$extension] ?? 'desconocido'));
             return $mapa[$extension] ?? 0;
         }
 
@@ -173,38 +169,26 @@ class MotorFirmas
 
     public function obtenerNombreTipo($tipo)
     {
-        // Nombre derivado del array maestro self::$TIPOS
         return self::$TIPOS[$tipo]['nombre'] ?? self::$TIPOS[0]['nombre'];
     }
 
     public function verificarTipoEspecifico($ruta, $tipo)
     {
-        if ($this->modoExe) {
-            // En modo EXE comparamos el resultado del análisis
-            return ($this->analizarArchivo($ruta) === $tipo) ? 1 : 0;
-        }
-
-        $contenido = file_get_contents($ruta);
-        $len       = strlen($contenido);
-        $buffer    = $this->ffi->new("unsigned char[$len]", false);
-        FFI::memcpy($buffer, $contenido, $len);
-        return $this->ffi->VerificarFirmaEspecifica($buffer, $len, $tipo);
+        // En lugar de hacer una nueva lectura de archivo y llamar a VerificarFirmaEspecifica en la DLL,
+        // reutilizamos analizarArchivo() para asegurarnos de que la lectura optimizada de 1024 bytes
+        // y la corrección de los archivos Office (ZIP a 7) se aplique siempre correctamente.
+        return ($this->analizarArchivo($ruta) === $tipo) ? 1 : 0;
     }
 
     public function version()
     {
-        if ($this->modoExe) {
-            return 1; // versión por defecto en modo EXE
-        }
+        if ($this->modoExe) return 0x00010000;
         return $this->ffi->ObtenerVersionLibreria();
     }
 
     public function totalTipos()
     {
-        if ($this->modoExe) {
-            // Total derivado del array maestro (excluye DESCONOCIDO, código 0)
-            return count(self::$TIPOS) - 1;
-        }
+        if ($this->modoExe) return count(self::$TIPOS) - 1;
         return $this->ffi->ObtenerTotalTiposSoportados();
     }
 }

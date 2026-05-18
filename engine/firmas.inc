@@ -1,5 +1,5 @@
 ; ============================================================================
-; firmas.inc - Definición de Firmas Mágicas de Archivos
+; firmas.inc - Definición de Firmas Mágicas de Archivos (x64)
 ; ============================================================================
 ; Este archivo contiene las firmas (magic numbers) de diferentes tipos de
 ; archivos para su detección automática.
@@ -77,28 +77,31 @@ szTAR               BYTE "TAR", 0
 szGZIP              BYTE "GZIP", 0
 szCLASS             BYTE "JAVA CLASS", 0
 
+; ============================================================================
+; CAMBIO CRÍTICO PARA x64: DWORD a QWORD en la tabla de punteros
+; ============================================================================
 ; Tabla de punteros a nombres de tipos
-TablaNombresTipos   DWORD OFFSET szDesconocido      ; 0
-                    DWORD OFFSET szJPEG             ; 1
-                    DWORD OFFSET szPNG              ; 2
-                    DWORD OFFSET szGIF              ; 3
-                    DWORD OFFSET szBMP              ; 4
-                    DWORD OFFSET szPDF              ; 5
-                    DWORD OFFSET szZIP              ; 6
-                    DWORD OFFSET szDOCX             ; 7
-                    DWORD OFFSET szEXE              ; 8
-                    DWORD OFFSET szELF              ; 9
-                    DWORD OFFSET szMP3              ; 10
-                    DWORD OFFSET szMP4              ; 11
-                    DWORD OFFSET szRAR              ; 12
-                    DWORD OFFSET sz7Z               ; 13
-                    DWORD OFFSET szWAV              ; 14
-                    DWORD OFFSET szAVI              ; 15
-                    DWORD OFFSET szWEBP             ; 16
-                    DWORD OFFSET szICO              ; 17
-                    DWORD OFFSET szTAR              ; 18
-                    DWORD OFFSET szGZIP             ; 19
-                    DWORD OFFSET szCLASS            ; 20
+TablaNombresTipos   QWORD OFFSET szDesconocido      ; 0
+                    QWORD OFFSET szJPEG             ; 1
+                    QWORD OFFSET szPNG              ; 2
+                    QWORD OFFSET szGIF              ; 3
+                    QWORD OFFSET szBMP              ; 4
+                    QWORD OFFSET szPDF              ; 5
+                    QWORD OFFSET szZIP              ; 6
+                    QWORD OFFSET szDOCX             ; 7
+                    QWORD OFFSET szEXE              ; 8
+                    QWORD OFFSET szELF              ; 9
+                    QWORD OFFSET szMP3              ; 10
+                    QWORD OFFSET szMP4              ; 11
+                    QWORD OFFSET szRAR              ; 12
+                    QWORD OFFSET sz7Z               ; 13
+                    QWORD OFFSET szWAV              ; 14
+                    QWORD OFFSET szAVI              ; 15
+                    QWORD OFFSET szWEBP             ; 16
+                    QWORD OFFSET szICO              ; 17
+                    QWORD OFFSET szTAR              ; 18
+                    QWORD OFFSET szGZIP             ; 19
+                    QWORD OFFSET szCLASS            ; 20
 
 ; ============================================================================
 ; FIRMAS MÁGICAS DE ARCHIVOS
