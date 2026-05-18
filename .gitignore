@@ -1,5 +1,5 @@
 # Binarios compilados (no se versionan, van en engine/ solo localmente)
-*.dll
+# *.dll
 *.exe
 *.obj
 *.lst
